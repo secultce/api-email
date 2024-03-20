@@ -16,6 +16,7 @@ services:
       # - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
     networks:
       - sail
+      - lab
     healthcheck:
       test:
         - CMD
@@ -32,6 +33,7 @@ services:
       - 'sail-redis:/data'
     networks:
       - sail
+      - lab
     healthcheck:
       test:
         - CMD
@@ -56,6 +58,7 @@ services:
       - "${NGINX_HOST_HTTP_PORT}:80"
     networks:
       - sail
+      - lab
   fpm-email:
     build:
       context: "./docker/php-fpm"
@@ -63,6 +66,7 @@ services:
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
     networks:
       - sail
+      - lab
     expose:
       - "9000"
   mailpit:
@@ -72,31 +76,20 @@ services:
       - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
     networks:
       - sail
+      - lab
   memcached:
     image: 'memcached:alpine'
     ports:
       - '${FORWARD_MEMCACHED_PORT:-11211}:11211'
     networks:
       - sail
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    hostname: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - sail
-    volumes:
-      - $PWD/storage/rabbitmq1:/var/lib/rabbitmq
-    environment:
-      - RABBITMQ_ERLANG_COOKIE=This_is_my_secret_phrase
-      - RABBITMQ_DEFAULT_USER=mqadmin
-      - RABBITMQ_DEFAULT_PASS=Admin123XX_
-      - CLUSTERED=true
+      - lab
+ 
 networks:
   sail:
     driver: bridge
+  lab:
+    external: true
 volumes:
   sail-mysql:
     driver: local

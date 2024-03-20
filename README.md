@@ -25,3 +25,29 @@ Sempre é bem vinda!
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## RabbitMq
+
+Para iniciar o serviço RabbitMq na mesma rede que esse repositório usa no docker-compose, deve rodar esse comando.
+
+``version: '3'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - lab
+    volumes:
+      - $PWD/storage/rabbitmq1:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=This_is_my_secret_phrase
+      - RABBITMQ_DEFAULT_USER=mqadmin
+      - RABBITMQ_DEFAULT_PASS=Admin123XX_
+      - CLUSTERED=true
+networks:
+  lab:
+    external: true``
