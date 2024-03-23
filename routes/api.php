@@ -8,6 +8,8 @@ use App\Http\Controllers\UserController;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EmailRegistrationOpp;
 
 function process_message($message)
 {
@@ -24,20 +26,8 @@ function process_message($message)
 }
 
 Route::get('send', function() {
-    $exchange = 'router';
-    $queue = 'msgs';
-    $consumerTag = 'consumer';
-
-    $connection = new AMQPStreamConnection('rabbitmq', '5672', 'mqadmin', 'Admin123XX_', '/');
-    $channel = $connection->channel();
-    $channel->queue_declare($queue, false, true, false, false);
-
-    $channel->exchange_declare($exchange, 'direct', false, true, false);
-
-    $channel->queue_bind($queue, $exchange);
-
-    $channel->basic_consume($queue, $consumerTag, false, false, false, false, 'process_message');
-    $channel->wait();
+    $email = Mail::to('franciscoanto@gmail.com')->send(new EmailRegistrationOpp());
+    dump($email);
 //    $channel->close();
 //    $connection->close();
 });
