@@ -39,17 +39,25 @@ class ConsumerCommand extends Command
         $callback = function ($msg) {
 //            echo ' [x] Received ', $msg->body, "\n";
             $data = json_decode($msg->body);
-
-//            echo ' [x] Received ', $data[0]->email, "\n";;
+            if($msg->getRoutingKey() == 'proponente')
+            {
+                Mail::to($data->email)->send(new EmailRegistrationOpp(
+                    $data->name,
+                    $data->number,
+                    $data->days
+                ));
+            }
             foreach ($data as $userData)
             {
-                echo ' [x] Received ', $userData->email, "\n";
-               try{
-                   Mail::to($userData->email)->send(new EmailRegistrationOpp());
-               }catch (\Exception $e)
-               {
-                   var_dump($e->getMessage());
-               }
+//                var_dump($userData->email);
+//                echo ' [x] ', $msg->getRoutingKey(), ':', $msg->getBody(), "\n";
+//                echo ' [x] Received ', $userData->email, "\n";
+//               try{
+//                   Mail::to($userData->email)->send(new EmailRegistrationOpp());
+//               }catch (\Exception $e)
+//               {
+//                   var_dump($e->getMessage());
+//               }
             }
 
             $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);

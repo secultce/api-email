@@ -16,10 +16,12 @@ class EmailRegistrationOpp extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(
+        public string $nameUser,
+        public string $number,
+        public string $days
+    )
+    { }
 
     /**
      * Get the message envelope.
@@ -27,7 +29,7 @@ class EmailRegistrationOpp extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Email Registration Opp',
+            subject: 'Diligência Aberta - Resposta Necessária',
         );
     }
 

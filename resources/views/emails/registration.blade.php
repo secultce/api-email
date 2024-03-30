@@ -8,10 +8,26 @@
     <title>Email</title>
 </head>
 <body>
-    <p>Disparo de envio de e-mail</p>
-
     <p>
-      <button>Click aqui</button>
+        <h3>Prezado</h3>
+    </p>
+    <p>
+        Espero que este e-mail o encontre bem.
+    </p>
+    <p>
+        Gostaríamos de informá-lo que uma diligência foi aberta pelo nosso avaliador em relação ao seu projeto/proposta.
+        O avaliador identificou alguns pontos que necessitam de esclarecimentos adicionais ou informações complementares.
+    </p>
+    <p>
+        Para responder à diligência, por favor, clique no link abaixo:
+    </p>
+    <p>
+      <a href="http://localhost:8088/inscricao/{{$number}}">Click aqui</a>
+    </p>
+    <p>
+    Pedimos que responda às questões em até {{$days}} para que possamos dar continuidade ao processo de avaliação.
+
+    Fique à vontade para entrar em contato conosco caso tenha alguma dúvida ou necessite de assistência adicional.
     </p>
 </body>
 </html>
