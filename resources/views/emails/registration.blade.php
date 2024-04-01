@@ -9,13 +9,14 @@
 </head>
 <body>
     <p>
-        <h3>Prezado</h3>
+        <h3>Prezad@,</h3>
+    <label for="">{{$nameUser}}</label>
     </p>
     <p>
         Espero que este e-mail o encontre bem.
     </p>
     <p>
-        Gostaríamos de informá-lo que uma diligência foi aberta pelo nosso avaliador em relação ao seu projeto/proposta.
+        Gostaríamos de informá-l@ que uma diligência foi aberta pelo nosso avaliador em relação ao seu projeto/proposta.
         O avaliador identificou alguns pontos que necessitam de esclarecimentos adicionais ou informações complementares.
     </p>
     <p>
