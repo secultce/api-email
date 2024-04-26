@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\AnswerNotification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\EmailRegistrationOpp;
 use Illuminate\Console\Command;
@@ -37,7 +38,8 @@ class ConsumerCommand extends Command
         echo " [*] Waiting for messages. To exit press CTRL+C\n";
 
         $callback = function ($msg) {
-//            echo ' [x] Received ', $msg->body, "\n";
+
+            echo ' [x] Received ', $msg->body, "\n";
             $data = json_decode($msg->body);
             if($msg->getRoutingKey() == 'proponente')
             {
@@ -47,19 +49,12 @@ class ConsumerCommand extends Command
                     $data->days
                 ));
             }
-            foreach ($data as $userData)
+            if($msg->getRoutingKey() == 'resposta')
             {
-//                var_dump($userData->email);
-//                echo ' [x] ', $msg->getRoutingKey(), ':', $msg->getBody(), "\n";
-//                echo ' [x] Received ', $userData->email, "\n";
-//               try{
-//                   Mail::to($userData->email)->send(new EmailRegistrationOpp());
-//               }catch (\Exception $e)
-//               {
-//                   var_dump($e->getMessage());
-//               }
-            }
-
+                Mail::to($data->comission)->cc($data->owner)->send(new AnswerNotification(
+                    $data->registration,
+                ));
+            };
             $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
         };
         $channel->basic_qos(null, 1, null);
