@@ -59,7 +59,7 @@ COPY docker/start-container /usr/local/bin/start-container
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
-COPY docker/php-fpm /var/www/html/
+COPY ./ /var/www/html/
 
 EXPOSE 8000
 
