@@ -45,7 +45,7 @@
         </button>
     </p>
     <p>
-    Pedimos que responda às solicitações em até {{$days}} dias para dar continuidade ao processo de avaliação.
+    Pedimos que responda às solicitações em até {{$days}} dias úteis para dar continuidade ao processo de avaliação.
 
         Em caso de dúvidas ou assistência adicional, entre em contato conosco
         <a href="https://tawk.to/chat/5f35c9424c7806354da63dc9/default" target="_blank"> chat </a> ou
