@@ -30,7 +30,8 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 Para iniciar o serviço RabbitMq na mesma rede que esse repositório usa no docker-compose, deve rodar esse comando.
 
-``version: '3'
+``
+version: '3'
 services:
   rabbitmq:
     image: rabbitmq:3-management
@@ -50,4 +51,38 @@ services:
       - CLUSTERED=true
 networks:
   lab:
-    external: true``
+    external: true
+``
+
+## Instalação
+
+Instruções para instalação da api com os seguintes comandos:
+
+- `cp .env.example .env`
+
+Adicionar no arquivo .env
+
+FORWARD_DB_PORT=
+DATA_PATH_HOST=~/.sail/data
+APP_CODE_PATH_HOST=./
+APP_CODE_PATH_CONTAINER=/var/www/html
+APP_CODE_PATH_PROJECT=/var/www
+APP_CODE_CONTAINER_FLAG=:cached
+
+##### NGINX #################################################
+
+NGINX_HOST_HTTP_PORT=8081
+NGINX_HOST_HTTPS_PORT=443
+NGINX_HOST_LOG_PATH=./docker/logs/nginx/
+NGINX_SITES_PATH=./docker/nginx/sites/
+NGINX_PHP_UPSTREAM_CONTAINER=fpm-email
+NGINX_PHP_UPSTREAM_PORT=9000
+NGINX_SSL_PATH=./docker/nginx/ssl/
+
+- `docker compose up -d`
+- `docker exec php_api composer update`
+- `docker exec php_api php artisan key:generate`
+- `docker exec php_api php artisan migrate`
+- `docker exec php_api chmod -R 777 database`
+
+Acessar na porta 8081
