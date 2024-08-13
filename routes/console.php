@@ -4,6 +4,7 @@ use App\Mail\DeadlineForAccountability;
 use GuzzleHttp\Client;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schedule;
 
@@ -20,6 +21,13 @@ Schedule::call(function () {
     $infos = json_decode($response->getBody()->getContents());
 
     foreach ($infos as $info) {
-        Mail::to($info->user_email)->send(new DeadlineForAccountability($info));
+        $emailSent = Mail::to($info->user_email)->send(new DeadlineForAccountability($info));
+        if ($emailSent instanceof \Illuminate\Mail\SentMessage) {
+            if ($info->is_last_notification) {
+                $response = Http::post('http://172.18.3.108:8088/bigsheet/updateNotificationStatus', [
+                    'registration_number' => $info->registration_number
+                ]);
+            }
+        }
     }
 })->everyMinute();
