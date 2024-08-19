@@ -36,7 +36,9 @@ class NotificationAccountability implements ShouldQueue
             $emailSent = Mail::to($info->user_email)->send(new DeadlineForAccountability($info));
 
             if ($emailSent instanceof \Illuminate\Mail\SentMessage && $info->is_last_notification) {
-                Http::post(env('MAPA_URL').'bigsheet/updateNotificationStatus', [
+                Http::withHeaders([
+                    'access_token' => config('jwt.secret')
+                ])->post(config('app.mapa_url') . 'bigsheet/updateNotificationStatus', [
                     'registration_number' => $info->registration_number
                 ]);
             }

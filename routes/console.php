@@ -12,8 +12,8 @@ Artisan::command('inspire', function () {
 
 Schedule::call(function () {
     $response = Http::withHeaders([
-        'access_token' => env('JWT_SECRET')
-    ])->get(env('MAPA_URL') . 'bigsheet/infoForNotificationsAccountability');
+        'access_token' => config('jwt.secret')
+    ])->get(config('app.mapa_url') . 'bigsheet/infoForNotificationsAccountability');
     $infos = $response->json();
 
     NotificationAccountability::dispatch($infos);
