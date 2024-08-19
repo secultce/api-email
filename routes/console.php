@@ -11,7 +11,9 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::call(function () {
-    $response = Http::get(env('MAPA_URL').'bigsheet/infoForNotificationsAccountability');
+    $response = Http::withHeaders([
+        'access_token' => env('JWT_SECRET')
+    ])->get(env('MAPA_URL') . 'bigsheet/infoForNotificationsAccountability');
     $infos = $response->json();
 
     NotificationAccountability::dispatch($infos);
