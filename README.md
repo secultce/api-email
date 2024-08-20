@@ -86,3 +86,7 @@ NGINX_SSL_PATH=./docker/nginx/ssl/
 - `docker exec php_api chmod -R 777 database`
 
 Acessar na porta 8081
+
+### JWT Auth
+
+É usado o pacote jwt-auth (https://jwt-auth.readthedocs.io/en/develop/) para criar tokens de acesso que são enviados nas requisições, para garantir que pessoas não autorizadas acessem os dados retornados nos endpoints usados na api.
