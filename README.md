@@ -42,11 +42,11 @@ Acessar na porta 8081
 
 ## Conexão para RabbitMQ
 
-Instruções [aqui](https://github.com/secultce/api-email/docs/RABBITMQ.md) 
+Instruções [aqui](https://github.com/secultce/api-email/blob/develop/docs/RABBITMQ.md) 
 
 ## Conexão para as tarefas agendadas
 
-Instruções [aqui](https://github.com/secultce/api-email/docs/TASKSHEDULING.md)
+Instruções [aqui](https://github.com/secultce/api-email/blob/develop/docs/TASKSHEDULING.md)
 
 
 ### JWT Auth
