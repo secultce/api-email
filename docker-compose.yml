@@ -71,22 +71,22 @@ services:
     networks:
       - sail
       - lab
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    hostname: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - lab
-    volumes:
-      - $PWD/storage/rabbitmq1:/var/lib/rabbitmq
-    environment:
-      - RABBITMQ_ERLANG_COOKIE=This_is_my_secret_phrase
-      - RABBITMQ_DEFAULT_USER=mqadmin
-      - RABBITMQ_DEFAULT_PASS=Admin123XX_
-      - CLUSTERED=true
+#  rabbitmq:
+#    image: rabbitmq:3-management
+#    container_name: rabbitmq
+#    hostname: rabbitmq
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    networks:
+#      - lab
+#    volumes:
+#      - $PWD/storage/rabbitmq1:/var/lib/rabbitmq
+#    environment:
+#      - RABBITMQ_ERLANG_COOKIE=This_is_my_secret_phrase
+#      - RABBITMQ_DEFAULT_USER=mqadmin
+#      - RABBITMQ_DEFAULT_PASS=Admin123XX_
+#      - CLUSTERED=true
 networks:
   sail:
     driver: bridge
