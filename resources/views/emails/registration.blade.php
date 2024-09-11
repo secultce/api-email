@@ -45,9 +45,9 @@
         </button>
     </p>
     <p>
-    Pedimos que responda às solicitações em até {{$days}} dias úteis para dar continuidade ao processo de avaliação.
+        Solicitamos que acesse o sistema Mapa Cultural do Ceará e responda às solicitações o quanto antes para dar continuidade aos procedimentos necessários. 
 
-        Em caso de dúvidas ou assistência adicional, entre em contato conosco
+        Em caso de dúvidas ou necessidade de assistência, estamos à disposição pelo
         <a href="https://tawk.to/chat/5f35c9424c7806354da63dc9/default" target="_blank"> chat </a> ou
         pelo e-mail definido no edital.
     </p>

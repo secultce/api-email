@@ -38,7 +38,7 @@
 <div style="padding: 30px;font-family: system-ui;">
     <p>
         <button  class="btn-answer">
-            <a href="http://localhost:8088/inscricao/{{$number}}"
+            <a href="https://mapacultural.secult.ce.gov.br/inscricao/{{$number}}"
             >Conferir resposta</a>
         </button>
 
