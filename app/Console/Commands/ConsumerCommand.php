@@ -15,33 +15,34 @@ class ConsumerCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'rabbitmq:consumer';
+    protected $signature = 'diligence:consumer';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Cosumidor das filas do Rabbitmq para as diligências';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $exchange = 'router';
-        $queue = 'msgs';
-//        $consumerTag = 'consumer';
-        $connection = new AMQPStreamConnection('rabbitmq', '5672', 'mqadmin', 'Admin123XX_', '/');
+        $queue = env('RABBITMQ_QUEUE_PC');
+        $connection = new AMQPStreamConnection(
+            env('RABBITMQ_DEFAULT_HOST'),
+            env('RABBITMQ_DEFAULT_PORT'),
+            env('RABBITMQ_DEFAULT_USER'),
+            env('RABBITMQ_DEFAULT_PASS'),
+            '/'
+        );
         $channel = $connection->channel();
         $channel->queue_declare($queue, false, true, false, false);
-        echo " [*] Waiting for messages. To exit press CTRL+C\n";
 
         $callback = function ($msg) {
-
-            echo ' [x] Received ', $msg->body, "\n";
             $data = json_decode($msg->body);
-            if($msg->getRoutingKey() == 'proponente')
+            if( $msg->getRoutingKey() == env('RABBITMQ_QUEUE_PC_ROUTE_KEY_PROP') )
             {
                 Mail::to($data->email)->send(new EmailRegistrationOpp(
                     $data->name,
@@ -49,7 +50,7 @@ class ConsumerCommand extends Command
                     $data->days
                 ));
             }
-            if($msg->getRoutingKey() == 'resposta')
+            if($msg->getRoutingKey() == env('RABBITMQ_QUEUE_PC_ROUTE_KEY_ADM'))
             {
                 Mail::to($data->comission)->cc($data->owner)->send(new AnswerNotification(
                     $data->registration,
