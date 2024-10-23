@@ -8,11 +8,12 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Rmunate\Utilities\SpellNumber;
 
 class DeadlineForAccountability extends Mailable
 {
     use Queueable, SerializesModels;
-
+    public $number;
     /**
      * Create a new message instance.
      */
@@ -36,9 +37,16 @@ class DeadlineForAccountability extends Mailable
      */
     public function content(): Content
     {
+        $words = SpellNumber::integer(85)->toLetters(); // 'pt' para português
+
+        dd($words);
+
         return new Content(
             view: 'emails.deadline-for-accountability',
-            with: ['info' => $this->info]
+            with: [
+                'info' => $this->info,
+                'days_current' => $day,
+            ]
         );
     }
 

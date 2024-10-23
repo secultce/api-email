@@ -6,10 +6,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^11.29.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "php-amqplib/php-amqplib": "^3.2",
+        "rmunate/spell-number": "^2.0",
         "tymon/jwt-auth": "^2.1"
     },
     "require-dev": {
@@ -17,6 +18,7 @@
         "laravel/breeze": "^2.0",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",
+        "lucascudo/laravel-pt-br-localization": "^3.0",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0",
         "phpunit/phpunit": "^10.5",

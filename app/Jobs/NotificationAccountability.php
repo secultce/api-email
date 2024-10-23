@@ -23,7 +23,7 @@ class NotificationAccountability implements ShouldQueue
      */
     public function __construct(protected $infos)
     {
-        //
+
     }
 
     /**
@@ -34,12 +34,11 @@ class NotificationAccountability implements ShouldQueue
         foreach ($this->infos as $info) {
             $info = (object)$info;
             $emailSent = Mail::to($info->user_email)->send(new DeadlineForAccountability($info));
-
+            // $info->is_last_notification, último dia para enviar a notificação
             if ($emailSent instanceof \Illuminate\Mail\SentMessage && $info->is_last_notification) {
-                Http::withHeaders([
+                Http::post(config('app.mapa_url') . 'bigsheet/updateNotificationStatus', [
+                    'registration_number' => $info->registration_number,
                     'access_token' => config('jwt.secret')
-                ])->post(config('app.mapa_url') . 'bigsheet/updateNotificationStatus', [
-                    'registration_number' => $info->registration_number
                 ]);
             }
         }
