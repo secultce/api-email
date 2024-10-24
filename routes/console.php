@@ -19,4 +19,4 @@ Schedule::call(function () {
     $infos = $response->json();
 
     NotificationAccountability::dispatch($infos);
-})->dailyAt('18:57');
+})->dailyAt('20:05');

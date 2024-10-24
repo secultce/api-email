@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7ab40ecd8d99e5122e3431b32412a0da",
+    "content-hash": "7e4f969a3961785bff7086ecd3fd8631",
     "packages": [
         {
             "name": "brick/math",
@@ -1053,6 +1053,46 @@
                 }
             ],
             "time": "2023-12-03T19:50:20+00:00"
+        },
+        {
+            "name": "juniorshyko/phpextensive",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Junior-Shyko/phpextensive.git",
+                "reference": "63837f6d60dc466ef7df895ee6c524fe9bca9886"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Junior-Shyko/phpextensive/zipball/63837f6d60dc466ef7df895ee6c524fe9bca9886",
+                "reference": "63837f6d60dc466ef7df895ee6c524fe9bca9886",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "type": "package",
+            "autoload": {
+                "psr-4": {
+                    "JuniorShyko\\Phpextensive\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Junior-Shyko",
+                    "email": "franciscaoanto@gmail.com"
+                }
+            ],
+            "description": "Pacote que converte numero em string por extenso",
+            "support": {
+                "issues": "https://github.com/Junior-Shyko/phpextensive/issues",
+                "source": "https://github.com/Junior-Shyko/phpextensive/tree/v1.0.0"
+            },
+            "time": "2024-10-24T18:55:53+00:00"
         },
         {
             "name": "laravel/framework",
@@ -3625,59 +3665,6 @@
                 }
             ],
             "time": "2024-04-27T21:32:50+00:00"
-        },
-        {
-            "name": "rmunate/spell-number",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/rmunate/SpellNumber.git",
-                "reference": "c225b10c03a82570c0be2ad0a1e916c2637aadcf"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/rmunate/SpellNumber/zipball/c225b10c03a82570c0be2ad0a1e916c2637aadcf",
-                "reference": "c225b10c03a82570c0be2ad0a1e916c2637aadcf",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.4"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Rmunate\\Utilities\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Raul Mauricio Uñate Castro",
-                    "email": "raulmauriciounate@gmail.com"
-                }
-            ],
-            "description": "Convierta de números a letras, ideal para uso en facturas, remisiones ó similares.",
-            "keywords": [
-                "altum",
-                "letras",
-                "numeros",
-                "rmunate",
-                "spell"
-            ],
-            "support": {
-                "issues": "https://github.com/rmunate/SpellNumber/issues",
-                "source": "https://github.com/rmunate/SpellNumber/tree/v1.0.0"
-            },
-            "abandoned": "illuminate/support",
-            "time": "2023-02-13T12:59:28+00:00"
         },
         {
             "name": "symfony/clock",

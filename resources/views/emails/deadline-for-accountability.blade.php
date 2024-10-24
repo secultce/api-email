@@ -10,9 +10,9 @@
                             <p><b>Prezado, espero que esteja bem.</b></p>
                             <p>
                                 A Secult vem por meio deste informar que já se passaram
-                                <strong>{{$this->info->days_current}} ({{$days_current}})</strong>
-                                dias da data do pagamento do seu projeto cultural. Sendo assim, faltam 05 (cinco)
-                                dias para o envio do
+                                <strong>{{$info->days_current}} ({{$days_current}})</strong>
+                                dias da data do pagamento do seu projeto cultural.
+                                {{ $complment_text }}
                                 <strong>Relatório de Avaliação Intermediária do Objeto - RAIO</strong>
                                 que deverá ser enviado através da plataforma Mapa Cultural.
                             </p>

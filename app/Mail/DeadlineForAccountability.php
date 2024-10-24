@@ -8,12 +8,12 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Rmunate\Utilities\SpellNumber;
+use JuniorShyko\Phpextensive\Extensive;
 
 class DeadlineForAccountability extends Mailable
 {
     use Queueable, SerializesModels;
-    public $number;
+    public string $complementText = 'está na hora de preencher e enviar';
     /**
      * Create a new message instance.
      */
@@ -37,15 +37,16 @@ class DeadlineForAccountability extends Mailable
      */
     public function content(): Content
     {
-        $words = SpellNumber::integer(85)->toLetters(); // 'pt' para português
-
-        dd($words);
-
+        $e = new  Extensive();
+        if($this->info->days_current === 85){
+            $this->complementText = 'faltam 05 (cinco) dias para o envio';
+        }
         return new Content(
             view: 'emails.deadline-for-accountability',
             with: [
                 'info' => $this->info,
-                'days_current' => $day,
+                'days_current' => $e->extensive( 85, Extensive::MALE_NUMBER ),
+                'complment_text' => $this->complementText,
             ]
         );
     }
