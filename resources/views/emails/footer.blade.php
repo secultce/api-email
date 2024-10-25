@@ -1,22 +1,18 @@
-<div class="footer ">
+<div class="footer">
     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-            <td>
-                <font face="tahoma, sans-serif" color="#444444">
-                    <a href="mailto:{{''}}" target="_blank" rel='noopener noreferrer'>{{'supportEmail'}}</a>
-                    <br>
-                </font>
-            </td>
-        </tr>
         <tr>
             <td class="content-block">
                 <span class="apple-link"><span></span> Mapa Cultural do Ceará<!--{{''}}--> </span><br>
-                <span class="apple-link"><span></span> <a href="{{''}}">https://mapacultural.secult.ce.gov.br/</a></span>
+                <span class="apple-link">
+                    <span>
+                        <a href="{{env('MAPA_URL')}}">https://mapacultural.secult.ce.gov.br/</a>
+                    </span>
+                </span>
             </td>
         </tr>
         <tr>
             <td class="content-block">
-                {{--                            <img src="{{asset:img/bar-logo.png}}" alt="">--}}
+                <img src="{{ asset('img/email/logo_footer_white.png')}}" alt="">
             </td>
         </tr>
     </table>
