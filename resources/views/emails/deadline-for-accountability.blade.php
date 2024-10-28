@@ -13,7 +13,7 @@
                                 <strong>{{$info->days_current}} ({{$days_current}})</strong>
                                 dias da data do pagamento do seu projeto cultural.
                                 {{ $complment_text }}
-                                <strong>Relatório de Avaliação Intermediária do Objeto - RAIO</strong>
+                                <strong>{{ $title_report }}</strong>
                                 que deverá ser enviado através da plataforma Mapa Cultural.
                             </p>
                             <p>Fique atento aos prazos!</p>
