@@ -45,7 +45,7 @@ class DeadlineForAccountability extends Mailable
             view: 'emails.deadline-for-accountability',
             with: [
                 'info' => $this->info,
-                'days_current' => $e->extensive( 85, Extensive::MALE_NUMBER ),
+                'days_current' => $e->extensive( $this->info->days_current, Extensive::MALE_NUMBER ),
                 'complment_text' => $this->complementText,
             ]
         );
