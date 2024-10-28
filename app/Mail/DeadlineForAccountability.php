@@ -8,11 +8,13 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use JuniorShyko\Phpextensive\Extensive;
 
 class DeadlineForAccountability extends Mailable
 {
     use Queueable, SerializesModels;
-
+    public string $complementText = 'está na hora de preencher e enviar';
+    public string $titleReport = '';
     /**
      * Create a new message instance.
      */
@@ -27,7 +29,7 @@ class DeadlineForAccountability extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Prazo para envio da prestação de contas ({$this->info->notification_type})",
+            subject: "Mapa Cultural - Prazo para envio da prestação de contas ({$this->info->notification_type})",
         );
     }
 
@@ -36,9 +38,20 @@ class DeadlineForAccountability extends Mailable
      */
     public function content(): Content
     {
+        $e = new  Extensive();
+        if($this->info->days_current === 85 || $this->info->days_current === 55){
+            $this->complementText = 'faltam 05 (cinco) dias para o envio';
+        }
+        // Mudando o titulo do relatorio
+        $this->info->notification_type === "REFO" ? $this->titleReport = 'Relatório de Execução Final do Objeto - REFO' : $this->titleReport = 'Relatório de Avaliação Intermediária do Objeto - RAIO';
         return new Content(
             view: 'emails.deadline-for-accountability',
-            with: ['info' => $this->info]
+            with: [
+                'info' => $this->info,
+                'days_current' => $e->extensive( $this->info->days_current, Extensive::MALE_NUMBER ),
+                'complment_text' => $this->complementText,
+                'title_report' => $this->titleReport,
+            ]
         );
     }
 
