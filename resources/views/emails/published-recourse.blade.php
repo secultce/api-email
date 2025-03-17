@@ -15,7 +15,7 @@
                                 Para visualizar, acesse o link:
                                 <span class="apple-link">
                                     <span>
-                                        <a href="{{ env('MAPA_URL') }}/recursos/agent/{{ $agentId }}">Acessar recurso</a>.
+                                        <a href="{{ env('MAPA_URL') }}recursos/agent/{{ $agentId }}">Acessar recurso</a>.
                                     </span>
                                 </span>
                             </p>
