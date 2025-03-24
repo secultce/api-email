@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prestação de contas</title>
+    <title>Secretaria da Cultura do Ceará</title>
     <style>
         img {
             border: none;
@@ -88,7 +88,6 @@
             color: #ffffff;
             font-size: 16px;
             text-align: center;
-        }
         }
         /* -------------------------------------
             TYPOGRAPHY
