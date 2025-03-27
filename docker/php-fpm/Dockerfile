@@ -27,7 +27,8 @@ RUN apt-get update && \
         libreadline-dev \
         libgmp-dev \
         mariadb-client \
-        unzip
+        unzip \
+        supervisor
 
 # Install soap extention
 RUN docker-php-ext-install soap
@@ -155,6 +156,7 @@ RUN usermod -u 1000 www-data
 WORKDIR /var/www/html
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
+COPY ./supervisord.conf /etc/supervisord.conf
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s /usr/local/bin/docker-entrypoint.sh /
 ENTRYPOINT ["docker-entrypoint.sh"]
