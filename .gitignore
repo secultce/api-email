@@ -21,3 +21,4 @@ docker-data
 data
 storage
 /docker/logs/
+docker/logs/nginx/error.log
