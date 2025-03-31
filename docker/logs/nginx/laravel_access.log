@@ -963,3 +963,5 @@
 10.11.0.1 - - [23/Oct/2024:19:41:19 +0000] "GET /test HTTP/1.1" 500 16581 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 10.11.0.1 - - [23/Oct/2024:19:41:20 +0000] "GET /test HTTP/1.1" 500 16581 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 10.11.0.1 - - [23/Oct/2024:19:42:30 +0000] "GET /test HTTP/1.1" 500 1122359 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+10.2.0.1 - - [13/Mar/2025:18:07:17 +0000] "GET / HTTP/1.1" 200 32 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0"
+10.2.0.1 - - [13/Mar/2025:18:07:18 +0000] "GET / HTTP/1.1" 200 32 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0"
