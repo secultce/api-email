@@ -1,16 +1,16 @@
-version: '3'
 services:
   db:
     image: postgres:15
+    restart: always
     ports:
       - "5433:5432"
     environment:
       - DEBUG=true
       - POSTGRES_DB=api_email
-      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=12345678
     volumes:
-      - ./data:/var/lib/postgresql
+      - sail-db:/var/lib/postgresql
+
   redis:
     image: 'redis:alpine'
     ports:
@@ -21,10 +21,7 @@ services:
       - sail
       - lab
     healthcheck:
-      test:
-        - CMD
-        - redis-cli
-        - ping
+      test: [ "CMD", "redis-cli", "ping" ]
       retries: 3
       timeout: 5s
 
@@ -45,17 +42,20 @@ services:
     networks:
       - sail
       - lab
+
   fpm-email:
     build:
       context: "./docker/php-fpm"
     container_name: php_api
     volumes:
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ./docker/php-fpm/99-xdebug.ini:/usr/local/etc/php/conf.d/99-xdebug.ini
     networks:
       - sail
       - lab
     expose:
       - "9000"
+
   mailpit:
     image: 'axllent/mailpit:latest'
     ports:
@@ -64,6 +64,7 @@ services:
     networks:
       - sail
       - lab
+
   memcached:
     image: 'memcached:alpine'
     ports:
@@ -87,14 +88,20 @@ services:
 #      - RABBITMQ_DEFAULT_USER=mqadmin
 #      - RABBITMQ_DEFAULT_PASS=Admin123XX_
 #      - CLUSTERED=true
+
 networks:
   sail:
     driver: bridge
   lab:
     external: true
+
 volumes:
-  sail-mysql:
+  sail-db:
     driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/data
+      o: bind
   sail-redis:
     driver: local
   # sail-meilisearch:

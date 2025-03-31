@@ -1,8 +1,6 @@
 # Copied from cyberduck/php-fpm-laravel
 #https://github.com/Cyber-Duck/php-fpm-laravel/blob/8.1/Dockerfile
-FROM php:8.3-fpm
-
-MAINTAINER support@cyber-duck.co.uk
+FROM php:8.4-fpm
 
 ENV COMPOSER_MEMORY_LIMIT='-1'
 ARG NODE_VERSION=18
