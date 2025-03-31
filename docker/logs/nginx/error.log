@@ -1,3 +1,5 @@
 2024/03/20 00:52:56 [emerg] 12#12: host not found in upstream "php-fpm:9000" in /etc/nginx/conf.d/upstream.conf:1
 2024/03/20 00:58:24 [emerg] 12#12: host not found in upstream "php-fpm:9000" in /etc/nginx/conf.d/upstream.conf:1
 2024/03/20 01:00:32 [emerg] 12#12: host not found in upstream "php-fpm:9000" in /etc/nginx/conf.d/upstream.conf:1
+2025/03/28 00:00:00 [notice] 65#65: signal process started
+2025/03/28 00:00:00 [notice] 66#66: signal process started
