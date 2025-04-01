@@ -1,15 +1,18 @@
 services:
-  db:
-    image: postgres:15
+  db-email:
+    image: postgres:16
     restart: always
     ports:
       - "5433:5432"
     environment:
-      - DEBUG=true
-      - POSTGRES_DB=api_email
-      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
-      - sail-db:/var/lib/postgresql
+      - sail-db:/var/lib/postgresql/data
+    networks:
+      - sail
 
   redis:
     image: 'redis:alpine'
@@ -36,7 +39,6 @@ services:
       - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
       - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
     ports:
-      #            port mappings, host to docker
       - "${NGINX_HOST_HTTPS_PORT}:443"
       - "${NGINX_HOST_HTTP_PORT}:80"
     networks:
@@ -72,22 +74,23 @@ services:
     networks:
       - sail
       - lab
-#  rabbitmq:
-#    image: rabbitmq:3-management
-#    container_name: rabbitmq
-#    hostname: rabbitmq
-#    ports:
-#      - "5672:5672"
-#      - "15672:15672"
-#    networks:
-#      - lab
-#    volumes:
-#      - $PWD/storage/rabbitmq1:/var/lib/rabbitmq
-#    environment:
-#      - RABBITMQ_ERLANG_COOKIE=This_is_my_secret_phrase
-#      - RABBITMQ_DEFAULT_USER=mqadmin
-#      - RABBITMQ_DEFAULT_PASS=Admin123XX_
-#      - CLUSTERED=true
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - lab
+    volumes:
+      - $PWD/storage/rabbitmq1:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=This_is_my_secret_phrase
+      - RABBITMQ_DEFAULT_USER=mqadmin
+      - RABBITMQ_DEFAULT_PASS=Admin123XX_
+      - CLUSTERED=true
 
 networks:
   sail:
@@ -98,10 +101,6 @@ networks:
 volumes:
   sail-db:
     driver: local
-    driver_opts:
-      type: none
-      device: ${PWD}/data
-      o: bind
   sail-redis:
     driver: local
   # sail-meilisearch:

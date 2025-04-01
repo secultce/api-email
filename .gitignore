@@ -21,3 +21,5 @@ docker-data
 data
 storage
 /docker/logs/
+
+xdebug.log
