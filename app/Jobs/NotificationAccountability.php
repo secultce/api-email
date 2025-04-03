@@ -16,15 +16,13 @@ class NotificationAccountability implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $backoff = 60;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(protected $infos)
-    {
-
-    }
+    public function __construct(protected $infos) {}
 
     /**
      * Execute the job.
@@ -32,13 +30,13 @@ class NotificationAccountability implements ShouldQueue
     public function handle(): void
     {
         foreach ($this->infos as $info) {
-            $info = (object)$info;
+            $info = (object) $info;
             $emailSent = Mail::to($info->user_email)->send(new DeadlineForAccountability($info));
             // $info->is_last_notification, último dia para enviar a notificação
             if ($emailSent instanceof \Illuminate\Mail\SentMessage && $info->is_last_notification) {
-                Http::post(config('app.mapa_url') . 'bigsheet/updateNotificationStatus', [
+                Http::post(config('app.mapa_url').'/bigsheet/updateNotificationStatus', [
                     'registration_number' => $info->registration_number,
-                    'access_token' => config('jwt.secret')
+                    'access_token' => config('jwt.secret'),
                 ]);
             }
         }

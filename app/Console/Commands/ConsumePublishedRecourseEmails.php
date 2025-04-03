@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Mail\PublishedRecourse;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
@@ -25,14 +26,21 @@ class ConsumePublishedRecourseEmails extends Command
 
     /**
      * Execute the console command.
+     *
+     * @throws Exception
      */
-    public function handle()
+    public function handle(): void
     {
-        // Conectar ao RabbitMQ
-        $connection = new AMQPStreamConnection(env('RABBITMQ_DEFAULT_HOST'), env('RABBITMQ_DEFAULT_PORT'), env('RABBITMQ_DEFAULT_USER'), env('RABBITMQ_DEFAULT_PASS'));
+        $queue = config('app.rabbitmq.queues.published_recourses_queue');
+        $connection = new AMQPStreamConnection(
+            config('app.rabbitmq.host'),
+            config('app.rabbitmq.port'),
+            config('app.rabbitmq.user'),
+            config('app.rabbitmq.pass'),
+        );
         $channel = $connection->channel();
+        $channel->queue_declare($queue, false, true, false, false);
 
-        $channel->queue_declare('published_recourses_queue', false, true, false, false);
         $this->info('🎯 Aguardando e-mails para envio...');
 
         $callback = function ($msg) {
@@ -62,7 +70,9 @@ class ConsumePublishedRecourseEmails extends Command
             Mail::to($data['email'])->send(new PublishedRecourse($data));
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            logger($e->getMessage());
+
             return false;
         }
     }

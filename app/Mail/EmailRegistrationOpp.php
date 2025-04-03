@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -20,8 +19,7 @@ class EmailRegistrationOpp extends Mailable
         public string $nameUser,
         public string $number,
         public string $days
-    )
-    { }
+    ) {}
 
     /**
      * Get the message envelope.

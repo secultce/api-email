@@ -25,7 +25,7 @@ class UserController extends Controller
 
         $token = $user->createToken('here-token-name');
 
-        return response()->json( ['token' => $token->plainTextToken]);
+        return response()->json(['token' => $token->plainTextToken]);
     }
 
     public function draft(Request $request)

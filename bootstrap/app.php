@@ -23,10 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-//        $exceptions->alias([
-//            'auth' => \App\Exceptions\AuthenticationException::class,
-//            'http' => \App\Exceptions\HttpException::class,
-//            'validation' => \App\Exceptions\ValidationException::class,
-//        ]);
+        //        $exceptions->alias([
+        //            'auth' => \App\Exceptions\AuthenticationException::class,
+        //            'http' => \App\Exceptions\HttpException::class,
+        //            'validation' => \App\Exceptions\ValidationException::class,
+        //        ]);
     })
     ->create();
