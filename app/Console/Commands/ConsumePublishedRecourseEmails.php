@@ -49,9 +49,11 @@ class ConsumePublishedRecourseEmails extends Command
             if ($this->sendEmail($data)) {
                 $msg->ack(); // Confirma o processamento
                 $this->info("📧 E-mail enviado para: {$data['email']}");
-            } else {
-                $this->error("❌ Falha ao enviar e-mail para: {$data['email']}");
+
+                return;
             }
+
+            $this->error("❌ Falha ao enviar e-mail para: {$data['email']}");
         };
 
         $channel->basic_consume('published_recourses_queue', '', false, false, false, false, $callback);

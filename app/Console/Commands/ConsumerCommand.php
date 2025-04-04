@@ -26,8 +26,9 @@ class ConsumerCommand extends Command
 
     /**
      * Execute the console command.
+     * @throws \Exception
      */
-    public function handle()
+    public function handle(): int
     {
         $queue = config('app.rabbitmq.queues.accountability');
         $connection = new AMQPStreamConnection(
@@ -40,26 +41,8 @@ class ConsumerCommand extends Command
         $channel = $connection->channel();
         $channel->queue_declare($queue, false, true, false, false);
 
-        $callback = function ($msg) {
-            $data = json_decode($msg->body);
-            if ($msg->getRoutingKey() == config('app.rabbitmq.route_key_prop')) {
-                Mail::to($data->email)->send(new EmailRegistrationOpp(
-                    $data->name,
-                    $data->number,
-                    $data->days
-                ));
-            }
-
-            if ($msg->getRoutingKey() == config('app.rabbitmq.route_key_adm')) {
-                Mail::to($data->comission)->cc($data->owner)->send(new AnswerNotification(
-                    $data->registration,
-                ));
-            }
-            $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-        };
-
         $channel->basic_qos(null, 1, null);
-        $channel->basic_consume($queue, '', false, false, false, false, $callback);
+        $channel->basic_consume(queue: $queue, callback: $this->processMessage(...));
 
         while ($channel->is_consuming()) {
             $channel->wait();
@@ -68,5 +51,26 @@ class ConsumerCommand extends Command
         $channel->close();
 
         return Command::SUCCESS;
+    }
+
+    protected function processMessage($msg): void
+    {
+        $data = json_decode($msg->body);
+
+        if ($msg->getRoutingKey() == config('app.rabbitmq.route_key_prop')) {
+            Mail::to($data->email)->send(new EmailRegistrationOpp(
+                $data->name,
+                $data->number,
+                $data->days
+            ));
+        }
+
+        if ($msg->getRoutingKey() == config('app.rabbitmq.route_key_adm')) {
+            Mail::to($data->comission)->cc($data->owner)->send(new AnswerNotification(
+                $data->registration
+            ));
+        }
+
+        $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
     }
 }
