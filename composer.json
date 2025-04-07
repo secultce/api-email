@@ -5,19 +5,21 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "guzzlehttp/guzzle": "^7.0",
         "juniorshyko/phpextensive": "^1.0",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "php-amqplib/php-amqplib": "^3.2",
-        "tymon/jwt-auth": "^2.1"
+        "tymon/jwt-auth": "^2.1",
+        "ext-pdo": "*"
     },
     "require-dev": {
+        "brianium/paratest": "^7.8",
         "fakerphp/faker": "^1.23",
         "laravel/breeze": "^2.0",
-        "laravel/pint": "^1.13",
+        "laravel/pint": "^1.21",
         "laravel/sail": "^1.26",
         "lucascudo/laravel-pt-br-localization": "^3.0",
         "mockery/mockery": "^1.6",
