@@ -12,7 +12,7 @@
                                 A Secult vem por meio deste informar que já se passaram
                                 <strong>{{$info->days_current}} ({{$days_current}})</strong>
                                 dias da data do pagamento do seu projeto cultural.
-                                {{ $complment_text }}
+                                {{ $complement_text }}
                                 <strong>{{ $title_report }}</strong>
                                 que deverá ser enviado através da plataforma Mapa Cultural.
                             </p>

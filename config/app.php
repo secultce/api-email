@@ -125,4 +125,16 @@ return [
 
     'mapa_url' => env('MAPA_URL'),
 
+    'rabbitmq' => [
+        'host' => env('RABBITMQ_DEFAULT_HOST'),
+        'port' => env('RABBITMQ_DEFAULT_PORT'),
+        'user' => env('RABBITMQ_DEFAULT_USER'),
+        'pass' => env('RABBITMQ_DEFAULT_PASS'),
+        'queues' => [
+            'accountability' => env('RABBITMQ_QUEUE_PC'),
+            'published_recourses' => env('RABBITMQ_QUEUE_PUBLISHED_RECOURSES'),
+        ],
+        'route_key_prop' => env('RABBITMQ_QUEUE_PC_ROUTE_KEY_PROP'),
+        'route_key_adm' => env('RABBITMQ_QUEUE_PC_ROUTE_KEY_ADM'),
+    ],
 ];
