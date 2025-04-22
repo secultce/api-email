@@ -24,3 +24,4 @@ storage
 docker/logs/nginx/error.log
 
 xdebug.log
+tests/coverage-html
