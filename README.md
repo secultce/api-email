@@ -52,3 +52,14 @@ Instruções [aqui](https://github.com/secultce/api-email/blob/develop/docs/TASK
 ### JWT Auth
 
 É usado o pacote jwt-auth (https://jwt-auth.readthedocs.io/en/develop/) para criar tokens de acesso que são enviados nas requisições, para garantir que pessoas não autorizadas acessem os dados retornados nos endpoints usados na api.
+
+### Workers
+
+Para cada novo componente que precise trabalhar com as tarefas de filas por exemplo, deve ser adicionar o comando no arquivo *supervisord.conf* , que se encontra no caminho ***docker/php-fpm/*** e escrever algo como: 
+
+    [program:name_command]
+    command=php artisan command:command
+    autostart=true
+    autorestart=true
+    stderr_logfile=/dev/stderr
+    stdout_logfile=/dev/stdout

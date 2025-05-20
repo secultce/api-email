@@ -1,8 +1,6 @@
 # Copied from cyberduck/php-fpm-laravel
 #https://github.com/Cyber-Duck/php-fpm-laravel/blob/8.1/Dockerfile
-FROM php:8.3-fpm
-
-MAINTAINER support@cyber-duck.co.uk
+FROM php:8.4-fpm
 
 ENV COMPOSER_MEMORY_LIMIT='-1'
 ARG NODE_VERSION=18
@@ -27,7 +25,8 @@ RUN apt-get update && \
         libreadline-dev \
         libgmp-dev \
         mariadb-client \
-        unzip
+        unzip \
+        supervisor
 
 # Install soap extention
 RUN docker-php-ext-install soap
@@ -155,6 +154,7 @@ RUN usermod -u 1000 www-data
 WORKDIR /var/www/html
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
+COPY ./supervisord.conf /etc/supervisord.conf
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s /usr/local/bin/docker-entrypoint.sh /
 ENTRYPOINT ["docker-entrypoint.sh"]
