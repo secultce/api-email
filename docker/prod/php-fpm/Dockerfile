@@ -19,16 +19,13 @@ RUN apt-get update && \
         libgmp-dev \
         mariadb-client \
         unzip \
-        supervisor
-
-RUN docker-php-ext-install soap exif pcntl zip pdo_mysql pdo_pgsql bcmath intl gmp sockets
-
-RUN pecl install redis && docker-php-ext-enable redis
-RUN pecl install memcached && docker-php-ext-enable memcached
-
-RUN docker-php-ext-install gd && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd
+        supervisor \
+    && docker-php-ext-install soap exif pcntl zip pdo_mysql pdo_pgsql bcmath intl gmp sockets \
+    && pecl install redis && docker-php-ext-enable redis \
+    && pecl install memcached \
+    && docker-php-ext-enable memcached \
+    && docker-php-ext-install gd \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
