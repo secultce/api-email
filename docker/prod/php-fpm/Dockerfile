@@ -19,27 +19,24 @@ RUN apt-get update && \
         libgmp-dev \
         mariadb-client \
         unzip \
-        supervisor
-
-RUN docker-php-ext-install soap exif pcntl zip pdo_mysql pdo_pgsql bcmath intl gmp sockets
-
-RUN pecl install redis && docker-php-ext-enable redis
-RUN pecl install memcached && docker-php-ext-enable memcached
-
-RUN docker-php-ext-install gd && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd
+        supervisor \
+    && docker-php-ext-install soap exif pcntl zip pdo_mysql pdo_pgsql bcmath intl gmp sockets \
+    && pecl install redis && docker-php-ext-enable redis \
+    && pecl install memcached \
+    && docker-php-ext-enable memcached \
+    && docker-php-ext-install gd \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-WORKDIR /var/www
-COPY . /var/www
+WORKDIR /var/www/html
+COPY . /var/www/html
 COPY ./docker/prod/php-fpm/supervisord.conf /etc/supervisord.conf
 COPY ./docker/prod/php-fpm/published.sh /etc/published.sh
 COPY ./docker/prod/php-fpm/works.sh /etc/works.sh
 COPY ./docker/prod/php-fpm/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN composer install --no-dev --optimize-autoloader
-RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www/storage
+RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www/html/storage
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 9000
