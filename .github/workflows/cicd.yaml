@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v5.0.0
         with:
           context: ./
-          file: ./Dockerfile
+          file: ./docker/prod/php-fpm/Dockerfile
           push: true
           tags: |
             secultceara/api-email:latest
