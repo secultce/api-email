@@ -60,7 +60,7 @@ class ConsumerCommand extends Command
     {
         $data = json_decode($msg->body);
 
-        if ($msg->getRoutingKey() == config('app.rabbitmq.route_key_prop')) {
+        if ($msg->getRoutingKey() == config('app.rabbitmq.route_keys.route_key_prop')) {
             Mail::to($data->email)->send(new EmailRegistrationOpp(
                 $data->name,
                 $data->number,
@@ -68,7 +68,7 @@ class ConsumerCommand extends Command
             ));
         }
 
-        if ($msg->getRoutingKey() == config('app.rabbitmq.route_key_adm')) {
+        if ($msg->getRoutingKey() == config('app.rabbitmq.route_keys.route_key_adm')) {
             Mail::to($data->comission)->cc($data->owner)->send(new AnswerNotification(
                 $data->registration
             ));

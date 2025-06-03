@@ -25,3 +25,7 @@ docker/logs/nginx/error.log
 
 xdebug.log
 tests/coverage-html
+
+**/caddy
+frankenphp
+frankenphp-worker.php

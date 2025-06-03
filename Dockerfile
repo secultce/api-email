@@ -1,4 +1,4 @@
-FROM php:fpm-alpine3.20
+FROM dunglas/frankenphp:php8.4
 
 COPY . /var/www/html
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -25,5 +25,3 @@ RUN apk add --no-cache \
     && chown -R www-data:www-data /var/www/html \
     # Limpeza dos pacotes
     && docker-php-source delete
-
-EXPOSE 9000
