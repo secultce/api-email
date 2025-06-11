@@ -133,6 +133,10 @@ return [
         'queues' => [
             'accountability' => env('RABBITMQ_QUEUE_PC'),
             'published_recourses' => env('RABBITMQ_QUEUE_PUBLISHED_RECOURSES'),
+            'opinions_published' => env('RABBITMQ_QUEUE_OPINIONS_PUBLISHED'),
+        ],
+        'exchanges' => [
+            'plugins' => env('RABBITMQ_EXCHANGE_PLUGINS'),
         ],
         'route_key_prop' => env('RABBITMQ_QUEUE_PC_ROUTE_KEY_PROP'),
         'route_key_adm' => env('RABBITMQ_QUEUE_PC_ROUTE_KEY_ADM'),
