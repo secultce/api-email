@@ -9,7 +9,7 @@
                         <main class="wrapper">
                             <p><b>Prezado(a), espero que esteja bem.</b></p>
                             <p>
-                                A Secult vem por meio deste informar que os pareceres referentes ao projeto inscrito na oportunidade
+                                A plataforma {{ $appName ?? 'Mapa Cultural do Ceará' }} vem por meio deste informar que os pareceres referentes ao projeto inscrito na oportunidade
                                 <strong>{{ $opportunity['name'] }}</strong>
                                 com número de inscrição
                                 <strong>{{ $registration['number'] }}</strong>
@@ -27,7 +27,7 @@
                                 Cordialmente,
                             </p>
                             <p>
-                                Secretaria Estadual da Cultura do Ceará.
+                                {{ $opportunity['owner']['name'] ?? 'Secretaria da Cultura do Estado do Ceará' }}.
                             </p>
                         </main>
                     </td>
