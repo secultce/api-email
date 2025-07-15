@@ -10,7 +10,7 @@
                             <p><b>Olá, espero que esteja bem.</b></p>
                             <p>
                                 Com grande satisfação, informamos que sua participação no
-                                <strong>{{ $opportunityName }}</strong>
+                                <strong>{{ $opp_name }}</strong>
                                 alcançou a próxima etapa!.
                             </p>
                             <p>

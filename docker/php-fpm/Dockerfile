@@ -153,6 +153,15 @@ RUN usermod -u 1000 www-data
 
 WORKDIR /var/www/html
 
+# Criar diretório de logs e ajustar permissões
+RUN mkdir -p /var/www/storage/logs && \
+    chown -R www-data:www-data /var/www/storage && \
+    chmod -R 775 /var/www/storage
+
+# Ajustar permissões do diretório principal
+RUN chown -R www-data:www-data /var/www
+RUN chmod -R 755 /var/www
+
 COPY ./docker-entrypoint.sh /usr/local/bin/
 COPY ./supervisord.conf /etc/supervisord.conf
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

@@ -10,24 +10,24 @@ services:
     volumes:
       - .:/var/www
       - ./docker/php-fpm/99-xdebug.ini:/usr/local/etc/php/conf.d/99-xdebug.ini
+      - ./docker/logs:/var/www/html/logs
+      - ./docker/php-fpm/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+      - ./docker/logs/worker.log:/var/www/html/storage/logs/worker.log
     ports:
       - "8000:8000"
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
-      - DB_HOST=db
       - QUEUE_CONNECTION=rabbitmq
-    depends_on:
-      db:
-        condition: service_healthy
     command: >
-      bash -c "php artisan migrate && php artisan serve --host=0.0.0.0 --port=8000"
+      bash -c "php artisan migrate && supervisord -c /etc/supervisor/conf.d/supervisord.conf"
     networks:
       - sail
       - lab
 
-  db:
+  db-email:
     image: postgres:16
+    restart: always
     environment:
       - POSTGRES_DB=${DB_DATABASE}
       - POSTGRES_USER=${DB_USERNAME}
@@ -36,12 +36,7 @@ services:
     volumes:
       - sail-db:/var/lib/postgresql/data
     ports:
-      - '${DB_PORT:-5432}:5432'
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - "5433:5432"
     networks:
       - sail
 
@@ -52,15 +47,12 @@ services:
       - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
     networks:
       - sail
-      - lab
 
 networks:
   sail:
     driver: bridge
   lab:
-    external: true
 
 volumes:
   sail-db:
-    driver: local
 

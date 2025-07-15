@@ -37,7 +37,7 @@ class ImporteRegistrationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.importe_registration',
+            view: 'emails.import-registration',
             with: [
                 'opp_name' => $this->data['opp_name'],
                 'registration' => $this->data['registration'],
