@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\PublishedRecourse;
 use Illuminate\Console\Command;
 use App\Services\RabbitMQService;
 use Illuminate\Support\Facades\Mail;
@@ -26,46 +25,45 @@ class ImportRegistrationCommand extends Command
      */
     protected $description = 'Comando para consumir a fila des imports de inscrição';
 
+    protected $queueService;
+
+    public function __construct(RabbitMQService $queueService)
+    {
+        parent::__construct();
+        $this->queueService = $queueService;
+    }
     /**
-     * Execute the console command.
+     * Execultando o comando no console
      */
     public function handle()
     {
         $queueService = new RabbitMQService();
-        $queue = config('rabbitmq.queue', 'registration_import');
+        $queue = config('rabbitmq.queue', 'import_registration');
         $exchange = config('rabbitmq.exchange', 'registration');
         $routingKey = config('rabbitmq.routing_key', 'import_registration');
-        $queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
-            $this->info('Mensagem recebida: ' . $msg->body);
-
-            try {
-                $registrations = json_decode($msg->body, true);
-                if (!is_array($registrations)) {
-                    $this->error('Formato de mensagem inválido');
-                    return;
-                }
-
-                foreach ($registrations as $registration) {
-                    // Lógica para processar cada registro
-                    $this->info(sprintf(
-                        'Processando inscrição %s da oportunidade %s (%s)',
-                        $registration['number'],
-                        $registration['opp_name'],
-                        $registration['opp_id']
-                    ));
-                    Mail::to($registration['agent_email'])->send(new ImporteRegistrationMail($registration));
-                    // Exemplo: Salvar no banco
-                    // \App\Models\Registration::create([
-                    //     'registration_id' => $registration['registration'],
-                    //     'opportunity_id' => $registration['opp_id'],
-                    //     'opportunity_name' => $registration['opp_name'],
-                    //     'number' => $registration['number'],
-                    //     'owner' => $registration['owner']
-                    // ]);
-                }
-            } catch (\Exception $e) {
-                $this->error('Erro ao processar mensagem: ' . $e->getMessage());
-            }
+        $this->queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
+            $this->processMessage($msg);
         });
+    }
+
+    protected function processMessage(AMQPMessage $msg)
+    {
+        Log::info('Mensagem recebida: ' . $msg->getBody());
+
+        try {
+            $registrations = json_decode($msg->getBody(), true);
+            if (!is_array($registrations)) {
+                Log::error('Formato de mensagem inválido');
+                return;
+            }
+
+            foreach ($registrations as $registration) {
+                Mail::to($registration['agent_email'])->send(new ImporteRegistrationMail($registration));
+                Log::info('Email enviado para ' . $registration['agent_email']);
+            }
+        } catch (\Exception $e) {
+            \Sentry\captureMessage($e, \Sentry\Severity::info());
+            Log::error('Erro ao processar a mensagem');
+        }
     }
 }

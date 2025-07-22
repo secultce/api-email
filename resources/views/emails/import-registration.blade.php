@@ -24,7 +24,7 @@
                                 </span>
                             </p>
                             <p>
-                                Parabéns pelo avanço! {{$owner}}
+                                Parabéns pelo avanço <b>{{$agent_name}}</b> !
                             </p>
                             <p>
 

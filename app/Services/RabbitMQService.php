@@ -33,10 +33,19 @@ class RabbitMQService
         }
     }
 
-    public function consume(string $queue, callable $callback): void
+    public function consume(string $queue, string $exchange, string $routingKey, callable $callback): void
     {
         try {
+            // Declarar a exchange
+            $this->channel->exchange_declare($exchange, 'direct', false, true, false);
+
+            // Declarar a fila
             $this->channel->queue_declare($queue, false, true, false, false);
+
+            // Vincular a fila à exchange
+            $this->channel->queue_bind($queue, $exchange, $routingKey);
+
+            // Consumir mensagens
             $this->channel->basic_consume($queue, '', false, true, false, false, function ($msg) use ($callback) {
                 $callback($msg);
             });
