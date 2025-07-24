@@ -37,7 +37,6 @@ class ImportRegistrationCommand extends Command
      */
     public function handle()
     {
-        $queueService = new RabbitMQService();
         $queue = config('rabbitmq.queue', 'import_registration');
         $exchange = config('rabbitmq.exchange', 'registration');
         $routingKey = config('rabbitmq.routing_key', 'import_registration');
