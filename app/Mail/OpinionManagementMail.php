@@ -20,18 +20,19 @@ class OpinionManagementMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Publicação do parecer de sua oportunidade',
+            subject: 'Justificativa da Análise de Pareceristas Disponível',
         );
     }
 
     public function content(): Content
     {
-//        dump($this->data['agent']['name']);
         return new Content(
             view: 'emails.opinion-management',
             with: [
                 'number' => $this->data['number'],
                 'agent' => $this->data['agent']['name'],
+                'opportunity' => $this->data['opportunity'],
+                'link' => $this->data['url'],
             ]
         );
     }
