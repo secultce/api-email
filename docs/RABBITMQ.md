@@ -10,3 +10,17 @@ Para iniciar o serviço RabbitMq na mesma rede que esse repositório usa no dock
 Para notificação de e-mail para os recuros deve rodar o seguinte comando:
 
 - `docker exec php_api php artisan rabbitmq:consume-published-recourse-emails`
+
+## ✨ Observação
+
+Todos os demais comandos de consumer estão no arquivos `supervisord.conf`
+
+## 🧱 Construindo Workers
+Com o comando: `make:custom-files nome_do_arquivo` , criará 03 arquivos padrões na seguinte estrutura
+ - app/Console/Commands
+ - app/Mail
+ - resources/views/emails
+
+Todos será o nome que foi passado por parâmetro, sendo assim bastará editar o necessário para a sua atividade.
+
+
