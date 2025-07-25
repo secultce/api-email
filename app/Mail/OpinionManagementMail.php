@@ -26,12 +26,12 @@ class OpinionManagementMail extends Mailable
 
     public function content(): Content
     {
-//        dd($this->data);
+//        dump($this->data['agent']['name']);
         return new Content(
             view: 'emails.opinion-management',
             with: [
                 'number' => $this->data['number'],
-                'agent' => $this->data['agent'],
+                'agent' => $this->data['agent']['name'],
             ]
         );
     }

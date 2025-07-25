@@ -29,7 +29,6 @@ class OpinionManagementCommand extends Command
         $this->queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
             $this->processMessage($msg);
         });
-        $this->info('OpinionManagement comando execultado com sucesso!');
     }
 
     protected function processMessage(AMQPMessage $msg)
@@ -37,30 +36,31 @@ class OpinionManagementCommand extends Command
         try {
             $registrations = json_decode($msg->getBody(), true);
 
-            if (!is_array($registrations)) {
-                Log::error('Formato de mensagem inválido');
-                return;
-            }
-
+//            if (!is_array($registrations) || !isset($registrations['registrations'], $registrations['opportunity'])) {
+//                $this->error('Formato de mensagem inválido');
+//                return;
+//            }
+//
             foreach ($registrations['registrations'] as $registration) {
 //                dump($registration);
-                foreach ($registration as $regis)
+                if (
+                    !isset($registration['number'],
+                    $registration['url'],
+                    $registration['agent']['email'],
+                    $registration['agent']['name']))
                 {
-//                    dump($regis);
-                    if (is_array($regis)){
-//                        dump($regis['agent']['email']);
-//                        Log::info('Emails enviados '. $regis['agent']['email']);
-                        $this->info('Emails enviados '. $regis['agent']['email']);
-                        Mail::to($regis['agent']['email'])->send(new OpinionManagementMail($regis));
-
-                    }
+                    $this->error('Chaves obrigatórias ausentes na inscrição: ' . json_encode($registration));
+                    continue;
                 }
+                $this->info('Enviando e-mail para: ' . $registration['agent']['email']);
+                Mail::to($registration['agent']['email'])->send(new OpinionManagementMail($registration));
             }
 
-
+            // Confirmar a mensagem após processamento
         } catch (\Exception $e) {
 //            \Sentry\captureMessage($e, \Sentry\Severity::info());
             Log::error('Erro ao processar a mensagem');
+            $this->error('Erro ao processar a mensagem: ' . $e->getMessage());
         }
     }
 }
