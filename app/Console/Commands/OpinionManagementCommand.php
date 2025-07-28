@@ -22,12 +22,23 @@ class OpinionManagementCommand extends Command
     }
     public function handle()
     {
-        $queue = 'opinion-management';
-        $exchange = 'opinion-management';
-        $routingKey = '';
-        $this->queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
-            $this->processMessage($msg);
-        });
+        try {
+            $queue = 'opinion-management';
+            $exchange = 'opinion-management';
+            $routingKey = '';
+            $this->info("Iniciando consumidor para a fila: {$queue}");
+            $this->queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
+                $this->processMessage($msg);
+            });
+        } catch (\Exception $e) {
+            Log::error('Erro ao iniciar consumidor RabbitMQ: ' . $e->getMessage(), [
+                'queue' => $queue,
+                'exchange' => $exchange,
+                'routingKey' => $routingKey
+            ]);
+            $this->error('Erro ao iniciar consumidor: ' . $e->getMessage());
+        }
+
     }
 
     protected function processMessage(AMQPMessage $msg)
@@ -42,6 +53,7 @@ class OpinionManagementCommand extends Command
             }
             $regis = $this->getRegistration($registrations);
             foreach ($regis as $registration) {
+                $this->info('Enviando e-mail para: ' . $registration['agent']['email']);
                 Mail::to($registration['agent']['email'])->send(new OpinionManagementMail($registration));
             }
             // Confirmar a mensagem após processamento

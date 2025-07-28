@@ -24,7 +24,7 @@ services:
       db-email:
         condition: service_healthy
     command: >
-      bash -c "php artisan migrate && supervisord -c /etc/supervisor/conf.d/supervisord.conf"
+      bash -c "composer update --no-interaction && php artisan migrate && supervisord -c /etc/supervisor/conf.d/supervisord.conf"
     networks:
       - sail
       - lab

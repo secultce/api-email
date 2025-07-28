@@ -37,9 +37,9 @@ class ImportRegistrationCommand extends Command
      */
     public function handle()
     {
-        $queue = config('rabbitmq.queue', 'import_registration');
-        $exchange = config('rabbitmq.exchange', 'registration');
-        $routingKey = config('rabbitmq.routing_key', 'import_registration');
+        $queue = 'import_registration';
+        $exchange = 'registration';
+        $routingKey = 'import_registration';
         $this->queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
             $this->processMessage($msg);
         });

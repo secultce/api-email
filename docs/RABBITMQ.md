@@ -23,4 +23,14 @@ Com o comando: `make:custom-files nome_do_arquivo` , criará 03 arquivos padrõe
 
 Todos será o nome que foi passado por parâmetro, sendo assim bastará editar o necessário para a sua atividade.
 
+## Comando uteis para Rabbitmq
 
+1. **Limpar Filas**:
+   - Liste as filas:
+     ```bash
+     rabbitmqctl list_queues
+     ```
+   - Delete filas desnecessárias:
+     ```bash
+     rabbitmqctl delete_queue nome_da_fila
+     ```
