@@ -48,6 +48,23 @@ services:
       retries: 5
     networks:
       - sail
+  rabbitmq_local:
+      image: rabbitmq:3-management
+      container_name: rabbitmq_local
+      hostname: rabbitmq_local
+      ports:
+        - "5672:5672"
+        - "15672:15672"
+      networks: 
+        - lab
+      volumes:
+      - $PWD/storage/rabbitmq:/var/lib/rabbitmq
+      environment:
+      - RABBITMQ_ERLANG_COOKIE=This_is_my_secret_phrase
+      - RABBITMQ_DEFAULT_USER=mqadmin
+      - RABBITMQ_DEFAULT_PASS=Admin123XX_
+      - CLUSTERED=true
+      command: ["bash", "-c", "chmod 400 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]
 
   mailpit:
     image: 'axllent/mailpit:latest'
