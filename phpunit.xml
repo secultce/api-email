@@ -27,6 +27,7 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="SENTRY_LARAVEL_DSN" value="https://dc2a046285a0767ee27902ea99506adc@o4508121592102912.ingest.us.sentry.io/4508160344915968"/>
     </php>
     <coverage>
         <report>
