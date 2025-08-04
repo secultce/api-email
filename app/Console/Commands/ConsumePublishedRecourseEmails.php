@@ -32,7 +32,7 @@ class ConsumePublishedRecourseEmails extends Command
      */
     public function handle(): void
     {
-        $queue = config('app.rabbitmq.queues.published_recourses_queue');
+        $queue = config('app.rabbitmq.queues.queue_published_recourses');
         $connection = new AMQPStreamConnection(
             config('app.rabbitmq.host'),
             config('app.rabbitmq.port'),

@@ -23,8 +23,8 @@ class OpinionManagementCommand extends Command
     public function handle()
     {
         try {
-            $queue = 'opinion-management';
-            $exchange = 'opinion-management';
+            $queue = config('rabbitmq.queues.queue_opinion_management', 'opinionsPublished');
+            $exchange = config('rabbitmq.exchange_default');
             $routingKey = '';
             $this->info("Iniciando consumidor para a fila: {$queue}");
             $this->queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
