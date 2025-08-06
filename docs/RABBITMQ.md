@@ -34,7 +34,7 @@ Todos será o nome que foi passado por parâmetro, sendo assim bastará editar o
      ```bash
      rabbitmqctl delete_queue nome_da_fila
      ```
-   - Delete TODAS as filas desnecessárias:
-     ```bash
-     rabbitmqctl list_queues | awk '{ print $1 }' | xargs -L1 rabbitmqctl delete_queue
-     ```
+     - Delete TODAS as filas desnecessárias:
+       ```bash
+           rabbitmqctl list_queues | awk '{ print $1 }' | xargs -L1 rabbitmqctl delete_queue
+       ```

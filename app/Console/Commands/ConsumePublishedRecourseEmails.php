@@ -32,15 +32,15 @@ class ConsumePublishedRecourseEmails extends Command
      */
     public function handle(): void
     {
-        $queue = config('app.rabbitmq.queues.queue_published_recourses');
+        $queue = config('rabbitmq.queues.queue_published_recourses');
         $connection = new AMQPStreamConnection(
-            config('app.rabbitmq.host'),
-            config('app.rabbitmq.port'),
-            config('app.rabbitmq.user'),
-            config('app.rabbitmq.pass'),
+            config('rabbitmq.host'),
+            config('rabbitmq.port'),
+            config('rabbitmq.user'),
+            config('rabbitmq.pass'),
         );
         $channel = $connection->channel();
-        $channel->queue_declare($queue, false, true, false, false);
+        $channel->queue_declare($queue, false, true, true, false);
 
         $this->info('🎯 Aguardando e-mails para envio...');
 
