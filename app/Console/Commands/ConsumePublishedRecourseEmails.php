@@ -38,11 +38,37 @@ class ConsumePublishedRecourseEmails extends Command
             config('rabbitmq.port'),
             config('rabbitmq.user'),
             config('rabbitmq.pass'),
+            '/',
         );
         $channel = $connection->channel();
-        $channel->queue_declare($queue, false, true, true, false);
 
-        $this->info('🎯 Aguardando e-mails para envio...');
+        $channel->exchange_declare(
+            'exchange_notification', // nome
+            'direct', // tipo (direct, topic, fanout)
+            false,    // passive (não verifica existência)
+            true,     // durable (sobrevive a reinicializações)
+            false     // auto_delete (não remove quando não usada)
+        );
+
+        $channel->queue_declare(
+            $queue,
+            false,   // passive: false (cria se não existir)
+            true,    // durable: true (igual à fila existente)
+            false,   // exclusive: false (não deve ser exclusiva)
+            false,   // auto_delete: false (não deletar automaticamente)
+            false,   // nowait: false (espera confirmação)
+            null,    // arguments: null (igual aos argumentos existentes)
+            null     // ticket: null
+        );
+        // Bind entre Exchange, Fila e Routing Key
+        $channel->queue_bind(
+            $queue,
+            'exchange_notification',
+            'plugin_published_recourses'
+        );
+
+
+        $this->info('🔄 Consumer iniciado. Aguardando mensagens...');
 
         $channel->basic_consume(queue: $queue, callback: $this->processMessage(...));
 

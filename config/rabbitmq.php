@@ -9,7 +9,7 @@ return [
     'queues' => [
         'queue_opinion_management' => env('QUEUE_OPINION_MANAGEMENT', 'queue_opinion_management'),
         'queue_import_registration' => env('QUEUE_IMPORT_REGISTRATION', 'queue_import_registration'),
-        'queue_published_recourses' => env('QUEUE_IMPORT_REGISTRATION', 'queue_published_recourses'),
+        'queue_published_recourses' => env('QUEUE_PUBLISHED_RECOURSES', 'queue_published_recourses'),
         'queue_accountability' => env('QUEUE_ACCOUNTABILITY', 'queue_accountability'),
     ],
     'routing' => [
