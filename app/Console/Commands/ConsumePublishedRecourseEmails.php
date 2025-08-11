@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Mail\PublishedRecourse;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -43,11 +44,11 @@ class ConsumePublishedRecourseEmails extends Command
         $channel = $connection->channel();
 
         $channel->exchange_declare(
-            'exchange_notification', // nome
-            'direct', // tipo (direct, topic, fanout)
-            false,    // passive (não verifica existência)
-            true,     // durable (sobrevive a reinicializações)
-            false     // auto_delete (não remove quando não usada)
+            config('rabbitmq.exchange_default'),
+            'direct',
+            false,
+            true,
+            false
         );
 
         $channel->queue_declare(
@@ -60,15 +61,16 @@ class ConsumePublishedRecourseEmails extends Command
             null,    // arguments: null (igual aos argumentos existentes)
             null     // ticket: null
         );
-        // Bind entre Exchange, Fila e Routing Key
+        // Vinculando
         $channel->queue_bind(
             $queue,
-            'exchange_notification',
-            'plugin_published_recourses'
+            config('rabbitmq.exchange_default'),
+            config('rabbitmq.routing.plugin_published_recourses')
         );
 
 
         $this->info('🔄 Consumer iniciado. Aguardando mensagens...');
+        Log::info('🔄 Consumer iniciado. Aguardando mensagens...');
 
         $channel->basic_consume(queue: $queue, callback: $this->processMessage(...));
 
@@ -84,11 +86,10 @@ class ConsumePublishedRecourseEmails extends Command
     {
         try {
             Mail::to($data['email'])->send(new PublishedRecourse($data));
-
             return true;
         } catch (Exception $e) {
-            logger($e->getMessage());
-
+            \Sentry\captureMessage($e, \Sentry\Severity::info());
+            Log::error('Erro ao processar a mensagem');
             return false;
         }
     }
@@ -100,10 +101,11 @@ class ConsumePublishedRecourseEmails extends Command
         if ($this->sendEmail($data)) {
             $msg->ack(); // Confirma o processamento
             $this->info("📧 E-mail enviado para: {$data['email']}");
-
+            Log::info("📧 E-mail enviado para: {$data['email']}");
             return;
         }
 
         $this->error("❌ Falha ao enviar e-mail para: {$data['email']}");
+        Log::error("❌ Falha ao enviar e-mail para: {$data['email']}");
     }
 }
