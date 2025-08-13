@@ -151,12 +151,13 @@ RUN rm -r /var/lib/apt/lists/*
 
 RUN usermod -u 1000 www-data
 
-WORKDIR /var/www/html
+WORKDIR /var/www
 
 # Criar diretório de logs e ajustar permissões
 RUN mkdir -p /var/www/storage/logs && \
-    chown -R www-data:www-data /var/www/storage && \
-    chmod -R 775 /var/www/storage
+    mkdir -p /var/www/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Ajustar permissões do diretório principal
 RUN chown -R www-data:www-data /var/www
