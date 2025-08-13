@@ -60,6 +60,8 @@ class ImportRegistrationCommand extends Command
                 Mail::to($registration['agent_email'])->send(new ImporteRegistrationMail($registration));
                 Log::info('Email enviado para ' . $registration['agent_email']);
             }
+            // Confirmar a mensagem após processamento
+            $msg->ack();
         } catch (\Exception $e) {
             \Sentry\captureMessage($e, \Sentry\Severity::info());
             Log::error('Erro ao processar a mensagem');
