@@ -29,7 +29,7 @@ class RabbitMQService
                 config('rabbitmq.host'),
                 config('rabbitmq.port'),
                 config('rabbitmq.user'),
-                config('rabbitmq.password'),
+                config('rabbitmq.pass'),
                 config('rabbitmq.vhost')
             );
             $this->channel = $this->connection->channel();
@@ -72,7 +72,7 @@ class RabbitMQService
             $this->channel->basic_consume($queue, '', false, false, false, false, function ($msg) use ($callback) {
                 $callback($msg);
             });
-            
+
             Log::info("Consumindo mensagens da fila: {$queue}");
             while ($this->channel->is_consuming()) {
                 $this->channel->wait();

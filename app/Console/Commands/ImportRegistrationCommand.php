@@ -37,9 +37,9 @@ class ImportRegistrationCommand extends Command
      */
     public function handle()
     {
-        $queue = 'import_registration';
-        $exchange = 'registration';
-        $routingKey = 'import_registration';
+        $queue = config('rabbitmq.queues.queue_import_registration');
+        $exchange = config('rabbitmq.exchange_default');
+        $routingKey = config('rabbitmq.routing.module_import_registration_draft');
         $this->queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
             $this->processMessage($msg);
         });
@@ -60,6 +60,8 @@ class ImportRegistrationCommand extends Command
                 Mail::to($registration['agent_email'])->send(new ImporteRegistrationMail($registration));
                 Log::info('Email enviado para ' . $registration['agent_email']);
             }
+            // Confirmar a mensagem após processamento
+            $msg->ack();
         } catch (\Exception $e) {
             \Sentry\captureMessage($e, \Sentry\Severity::info());
             Log::error('Erro ao processar a mensagem');

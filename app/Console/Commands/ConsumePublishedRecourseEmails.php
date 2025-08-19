@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Mail\PublishedRecourse;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -32,17 +33,44 @@ class ConsumePublishedRecourseEmails extends Command
      */
     public function handle(): void
     {
-        $queue = config('app.rabbitmq.queues.published_recourses_queue');
+        $queue = config('rabbitmq.queues.queue_published_recourses');
         $connection = new AMQPStreamConnection(
-            config('app.rabbitmq.host'),
-            config('app.rabbitmq.port'),
-            config('app.rabbitmq.user'),
-            config('app.rabbitmq.pass'),
+            config('rabbitmq.host'),
+            config('rabbitmq.port'),
+            config('rabbitmq.user'),
+            config('rabbitmq.pass'),
+            '/',
         );
         $channel = $connection->channel();
-        $channel->queue_declare($queue, false, true, false, false);
 
-        $this->info('🎯 Aguardando e-mails para envio...');
+        $channel->exchange_declare(
+            config('rabbitmq.exchange_default'),
+            'direct',
+            false,
+            true,
+            false
+        );
+
+        $channel->queue_declare(
+            $queue,
+            false,   // passive: false (cria se não existir)
+            true,    // durable: true (igual à fila existente)
+            false,   // exclusive: false (não deve ser exclusiva)
+            false,   // auto_delete: false (não deletar automaticamente)
+            false,   // nowait: false (espera confirmação)
+            null,    // arguments: null (igual aos argumentos existentes)
+            null     // ticket: null
+        );
+        // Vinculando
+        $channel->queue_bind(
+            $queue,
+            config('rabbitmq.exchange_default'),
+            config('rabbitmq.routing.plugin_published_recourses')
+        );
+
+
+        $this->info('🔄 Consumer iniciado. Aguardando mensagens...');
+        Log::info('🔄 Consumer iniciado. Aguardando mensagens...');
 
         $channel->basic_consume(queue: $queue, callback: $this->processMessage(...));
 
@@ -58,11 +86,10 @@ class ConsumePublishedRecourseEmails extends Command
     {
         try {
             Mail::to($data['email'])->send(new PublishedRecourse($data));
-
             return true;
         } catch (Exception $e) {
-            logger($e->getMessage());
-
+            \Sentry\captureMessage($e, \Sentry\Severity::info());
+            Log::error('Erro ao processar a mensagem');
             return false;
         }
     }
@@ -74,10 +101,11 @@ class ConsumePublishedRecourseEmails extends Command
         if ($this->sendEmail($data)) {
             $msg->ack(); // Confirma o processamento
             $this->info("📧 E-mail enviado para: {$data['email']}");
-
+            Log::info("📧 E-mail enviado para: {$data['email']}");
             return;
         }
 
         $this->error("❌ Falha ao enviar e-mail para: {$data['email']}");
+        Log::error("❌ Falha ao enviar e-mail para: {$data['email']}");
     }
 }
