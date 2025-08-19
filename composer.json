@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.4",
         "ext-pdo": "*",
+        "grok-php/laravel": "^1.1",
         "guzzlehttp/guzzle": "^7.0",
         "juniorshyko/phpextensive": "^1.0",
         "laravel/framework": "^12.20",
