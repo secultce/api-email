@@ -2,13 +2,11 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: "./docker/php-fpm"
-      dockerfile: Dockerfile
+    image: api-email:latest
     container_name: php_api
     working_dir: /var/www
     volumes:
-      - .:/var/www
+      #- .:/var/www
       - ./docker/php-fpm/99-xdebug.ini:/usr/local/etc/php/conf.d/99-xdebug.ini
       - ./docker/logs:/var/www/html/logs
       - ./docker/php-fpm/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
