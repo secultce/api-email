@@ -4,9 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\RabbitMQService;
-use Illuminate\Support\Facades\Mail;
-use PhpAmqpLib\Message\AMQPMessage;
 use Illuminate\Support\Facades\Log;
+use PhpAmqpLib\Message\AMQPMessage;
+use App\Events\MessageReceivedEvent;
+use Illuminate\Support\Facades\Mail;
 USE App\Mail\ImporteRegistrationMail;
 
 class ImportRegistrationCommand extends Command
@@ -59,6 +60,7 @@ class ImportRegistrationCommand extends Command
             foreach ($registrations as $registration) {
                 Mail::to($registration['agent_email'])->send(new ImporteRegistrationMail($registration));
                 Log::info('Email enviado para ' . $registration['agent_email']);
+                MessageReceivedEvent::dispatch($registration, 'email_queue');
             }
             // Confirmar a mensagem após processamento
             $msg->ack();

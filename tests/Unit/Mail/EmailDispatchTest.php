@@ -3,8 +3,13 @@
 namespace Tests\Unit\Mail;
 
 use DB;
+use Mockery;
 use Tests\TestCase;
+use App\Models\User;
 use App\Models\EmailDispatch;
+use App\Services\RabbitMQService;
+use App\Events\MessageReceivedEvent;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailDispatchTest extends TestCase
@@ -102,6 +107,52 @@ class EmailDispatchTest extends TestCase
             'auditable_type' => EmailDispatch::class,
             'auditable_id' => $emailDispatch->id,
             'event' => 'created',
+        ]);
+    }
+
+    public function test_can_audit_rabbitmq_message()
+    {
+         $user = User::factory()->create();
+         $this->actingAs($user);
+
+
+        $mock = Mockery::mock(RabbitMQService::class);
+        $this->app->instance(RabbitMQService::class, $mock);
+
+        $messageData = [
+            'to' => 'test@example.com',
+            'subject' => 'Test Subject',
+            'content' => 'Test Content',
+        ];
+
+        $mock->shouldReceive('consume')
+            ->once()
+            ->with('email_queue', Mockery::on(function ($callback) use ($messageData) {
+                $mockMessage = Mockery::mock();
+                $mockMessage->body = json_encode($messageData);
+                $mockMessage->shouldReceive('ack')->once();
+                $callback($mockMessage);
+                return true;
+            }));
+
+        Event::fake();
+
+        // $this->artisan('rabbitmq:import-registration-command');
+        
+        Event::assertDispatched(MessageReceivedEvent::class, function ($event) use ($messageData) {
+            return $event->data === $messageData && $event->queue === 'email_queue';
+        });
+
+        $this->assertDatabaseHas('message_audits', [
+            'queue' => 'email_queue',
+            'payload' => json_encode($messageData),
+            'user_id' => $user->id,
+        ]);
+
+        $this->assertDatabaseHas('audits', [
+            'auditable_type' => 'App\\Models\\MessageAudit',
+            'event' => 'created',
+            'user_id' => $user->id,
         ]);
     }
 }
