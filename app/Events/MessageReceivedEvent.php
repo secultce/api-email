@@ -24,7 +24,7 @@ class MessageReceivedEvent
     {
         $this->data = $data;
         $this->queue = $queue;
-        Log::info('Email enviado para ' . $registration['agent_email']);
+        Log::info('Email enviado para ' . $this->data['agent_email']);
     }
 
     /**

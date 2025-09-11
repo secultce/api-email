@@ -18,5 +18,4 @@ return [
         'module_accountability_adm' => env('MODULE_ACCOUNTABILITY_ADM', 'module_accountability_adm'),
         'plugin_published_recourses' => env('PLUGIN_PUBLISHED_RECOURSES', 'plugin_published_recourses'),
     ],
-
 ];

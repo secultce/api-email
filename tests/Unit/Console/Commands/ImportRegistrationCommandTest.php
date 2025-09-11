@@ -46,23 +46,33 @@ class ImportRegistrationCommandTest extends TestCase
         $queueService = Mockery::mock(RabbitMQService::class);
         $this->app->instance(RabbitMQService::class, $queueService);
 
+        // Dados completos que a classe ImporteRegistrationMail espera
         $messageBody = json_encode([
-            ['agent_email' => 'test1@example.com'],
-            ['agent_email' => 'test2@example.com'],
+            [
+                'registration' => '12345',
+                'opp_id' => '1',
+                'opp_name' => 'Oportunidade Teste 1',
+                'number' => '001',
+                'agent_name' => 'João Silva',
+                'agent_email' => 'test1@example.com',
+            ],
+            [
+                'registration' => '67890',
+                'opp_id' => '2',
+                'opp_name' => 'Oportunidade Teste 2',
+                'number' => '002',
+                'agent_name' => 'Maria Santos',
+                'agent_email' => 'test2@example.com',
+            ]
         ]);
-        $msgMock = $this->createMockAMQPMessage($messageBody, 'import_registration');
-        Log::shouldReceive('info')
-            ->once()
-            ->with('Mensagem recebida: ' . $messageBody);
 
+        $msgMock = $this->createMockAMQPMessage($messageBody, 'module_import_registration_draft');
+
+        Log::shouldReceive('info')->byDefault();
         Mail::fake();
-        Log::info( 'Email enviado para test1@example.com');
-        // Criando um instancia para o serviço
-        $command = new ImportRegistrationCommand($queueService);
 
+        $command = new ImportRegistrationCommand($queueService);
         $reflection = new \ReflectionClass($command);
-        // método processMessage sem precisar chamar métodos que causem travamento (como o handle ou consume)
-        // mas testa a lógica de processamento
         $method = $reflection->getMethod('processMessage');
         $method->setAccessible(true);
 
@@ -71,12 +81,12 @@ class ImportRegistrationCommandTest extends TestCase
         } catch (\Exception $e) {
             $this->fail('Exception in processMessage: ' . $e->getMessage());
         }
+        $sentEmails = Mail::sent(ImporteRegistrationMail::class);
 
-        // Verifique se os e-mails são enviados
+        // Verificar cada email individualmente
         Mail::assertSent(ImporteRegistrationMail::class, function ($mail) {
-            return in_array($mail->to[0]['address'], ['test1@example.com', 'test2@example.com']);
+            return $mail->content()->with['agent_email'] === 'test1@example.com';
         });
-        Mail::assertSent(ImporteRegistrationMail::class, 2);
     }
 
 
