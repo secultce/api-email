@@ -2,12 +2,15 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\OpinionManagementMail;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
-use PhpAmqpLib\Message\AMQPMessage;
-use Illuminate\Support\Facades\Log;
 use App\Services\RabbitMQService;
+use App\Mail\OpinionManagementMail;
+use Illuminate\Support\Facades\Log;
+use PhpAmqpLib\Message\AMQPMessage;
+use App\Events\MessageReceivedEvent;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Event;
+use App\Events\OpinionManagementEvent;
 
 class OpinionManagementCommand extends Command
 {
@@ -51,42 +54,24 @@ class OpinionManagementCommand extends Command
                 Log::error('Formato de mensagem inválido');
                 return;
             }
-            $regis = $this->getRegistration($registrations);
-            foreach ($regis as $registration) {
-                $this->info('Enviando e-mail para: ' . $registration['agent']['email']);
-                Mail::to($registration['agent']['email'])->send(new OpinionManagementMail($registration));
-            }
+            
+           
+             event(new OpinionManagementEvent($registrations));       
+            
             // Confirmar a mensagem após processamento
+            Log::info('Confirmando mensagem no RabbitMQ');
             $msg->ack();
+            Log::info('Mensagem confirmada com sucesso');
         } catch (\Exception $e) {
             \Sentry\captureMessage($e, \Sentry\Severity::info());
             Log::error('Erro ao processar a mensagem');
-            $this->error('Erro ao processar a mensagem: ');
+            $this->error('Erro ao processar a mensagem: '.$e->getMessage());
         }
     }
 
 /*
  * Formatando o array para incluir a oportunidade em cada item do array
  **/
-    protected function getRegistration($registrations): array
-    {
-        $regis = [];
-        foreach ($registrations['registrations'] as $registration) {
-            if (
-                !isset($registration['number'],
-                    $registration['url'],
-                    $registration['agent']['email'],
-                    $registration['agent']['name']))
-            {
-                $this->error('Chaves obrigatórias ausentes na inscrição: ' . json_encode($registration));
-                continue;
-            }
-            // adicionando nome da oportunidade
-            $regis[] = array_merge($registration, [
-                'opportunity' => $registrations['opportunity']['name']
-            ]);
-        }
-        return $regis;
-    }
+
 
 }

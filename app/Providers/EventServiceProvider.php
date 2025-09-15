@@ -2,15 +2,17 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use App\Events\MessageReceivedEvent;
+use App\Events\OpinionManagementEvent;
 use App\Listeners\AuditMessageListener;
+use App\Listeners\OpinionManagementListener;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
     protected $listen = [
-        MessageReceivedEvent::class => [
-            AuditMessageListener::class,
+        OpinionManagementEvent::class => [
+            OpinionManagementListener::class,
         ],
     ];
     /**

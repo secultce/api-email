@@ -2,29 +2,25 @@
 
 namespace App\Events;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
-class MessageReceivedEvent
+class OpinionManagementEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $data;
-    public $queue;
+    public $registration;
     /**
      * Create a new event instance.
      */
-    public function __construct(array $data, string $queue)
+    public function __construct($registration)
     {
-        $this->data = $data;
-        $this->queue = $queue;
-        Log::info('Email enviado para ' . $this->data['agent_email']);
+        $this->registration = $registration;
     }
 
     /**
