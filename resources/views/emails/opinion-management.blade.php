@@ -1,6 +1,6 @@
 @include('emails/header')
 
-<h3>Olá,  {{$agent}} </h3>
+<h3>Olá,  {{$data['agent']['name']}} </h3>
 <p>
     Temos uma ótima notícia! As justificativas dos pareceristas para a oportunidade
     <b>{{$opportunity}}</b> já estão disponíveis para você.
@@ -11,7 +11,7 @@
     correspondente para visualizar a justificativa completa.
 </p>
 <p>
-    <b>Link da Inscrição:</b> {{$link}}<br/>
+    <b>Link da Inscrição:</b> <a href="{{$data['url']}}"> {{$data['number']}} </a><br/>
     <b>Inscrição: </b> {{$number}}
 </p>
 <p>
