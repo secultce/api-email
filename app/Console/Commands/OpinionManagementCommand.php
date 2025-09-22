@@ -50,10 +50,7 @@ class OpinionManagementCommand extends Command
                 Log::error('Formato de mensagem inválido');
                 return;
             }
-
-
              event(new OpinionManagementEvent($registrations));
-
             // Confirmar a mensagem após processamento
             Log::info('Confirmando mensagem no RabbitMQ');
             $msg->ack();
@@ -64,10 +61,5 @@ class OpinionManagementCommand extends Command
             $this->error('Erro ao processar a mensagem: '.$e->getMessage());
         }
     }
-
-/*
- * Formatando o array para incluir a oportunidade em cada item do array
- **/
-
 
 }

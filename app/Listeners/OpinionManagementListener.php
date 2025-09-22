@@ -54,7 +54,6 @@ class OpinionManagementListener
     protected function getRegistration($registrations): array
     {
         $regis = [];
-        // dump($registrations->registration['registrations']);
         foreach ($registrations->registration['registrations'] as $registration) {
             if (
                 !isset(
