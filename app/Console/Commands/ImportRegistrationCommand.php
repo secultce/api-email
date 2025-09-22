@@ -60,7 +60,7 @@ class ImportRegistrationCommand extends Command
             foreach ($registrations as $registration) {
                 Mail::to($registration['agent_email'])->send(new ImporteRegistrationMail($registration));
                 Log::info('Email enviado para ' . $registration['agent_email']);
-                MessageReceivedEvent::dispatch($registration, 'email_queue');
+
             }
             // Confirmar a mensagem após processamento
             $msg->ack();

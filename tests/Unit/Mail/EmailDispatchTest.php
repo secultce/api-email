@@ -14,7 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailDispatchTest extends TestCase
 {
-    // use RefreshDatabase;
+//     use RefreshDatabase;
 
     protected function setUp(): void
     {
