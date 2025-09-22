@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use App\Services\RabbitMQService;
 use Illuminate\Support\Facades\Log;
 use PhpAmqpLib\Message\AMQPMessage;
-use App\Events\MessageReceivedEvent;
 use Illuminate\Support\Facades\Mail;
 USE App\Mail\ImporteRegistrationMail;
 
