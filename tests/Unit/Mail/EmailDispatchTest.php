@@ -5,12 +5,7 @@ namespace Tests\Unit\Mail;
 use DB;
 use Mockery;
 use Tests\TestCase;
-use App\Models\User;
 use App\Models\EmailDispatch;
-use App\Services\RabbitMQService;
-use App\Events\MessageReceivedEvent;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailDispatchTest extends TestCase
 {

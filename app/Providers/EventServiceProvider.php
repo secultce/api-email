@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Events\MessageReceivedEvent;
 use App\Events\OpinionManagementEvent;
 use App\Listeners\AuditMessageListener;
 use App\Listeners\OpinionManagementListener;

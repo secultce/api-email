@@ -4,12 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\RabbitMQService;
-use App\Mail\OpinionManagementMail;
 use Illuminate\Support\Facades\Log;
 use PhpAmqpLib\Message\AMQPMessage;
-use App\Events\MessageReceivedEvent;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Event;
 use App\Events\OpinionManagementEvent;
 
 class OpinionManagementCommand extends Command
@@ -54,10 +50,10 @@ class OpinionManagementCommand extends Command
                 Log::error('Formato de mensagem inválido');
                 return;
             }
-            
-           
-             event(new OpinionManagementEvent($registrations));       
-            
+
+
+             event(new OpinionManagementEvent($registrations));
+
             // Confirmar a mensagem após processamento
             Log::info('Confirmando mensagem no RabbitMQ');
             $msg->ack();
