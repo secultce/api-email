@@ -24,13 +24,13 @@ class OpinionManagementListener
      */
     public function handle(OpinionManagementEvent $event): void
     {
-       
+
         $regis = $this->getRegistration($event);
         foreach ($regis as $registration) {
             Log::info('Enviando e-mail para: ' . $registration['agent']['email']);
             // Cria o Mailable
             $mailable = new OpinionManagementMail($registration);
-           
+
             // Audita em EmailDispatch com o conteúdo renderizado
             EmailDispatch::create([
                 'to' => $registration['agent']['name'],
@@ -45,7 +45,7 @@ class OpinionManagementListener
                 ],
                 'dispatched_at' => now(),
             ]);
-            
+
             Mail::to($registration['agent']['email'])->send(new OpinionManagementMail($registration));
             Log::info('Email enviado e auditado para: ' . $registration['agent']['email']);
         }
@@ -67,11 +67,11 @@ class OpinionManagementListener
                 Log::error('Chaves obrigatórias ausentes na inscrição: ' . json_encode($registration));
                 continue;
             }
-           
+
             $regis[] = array_merge($registration, [
                 'opportunity' => $registrations->registration['opportunity']['name']
             ]);
-           
+
         }
         return $regis;
     }

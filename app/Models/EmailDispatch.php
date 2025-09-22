@@ -18,6 +18,11 @@ class EmailDispatch extends Model implements Auditable
      */
     protected $table = 'email_dispatches';
 
+    protected $auditInclude = [
+        'to',
+        'subject',
+        'meta'
+    ];
     /**
      * The attributes that are mass assignable.
      *
@@ -40,4 +45,6 @@ class EmailDispatch extends Model implements Auditable
     protected $casts = [
         'meta' => 'array'
     ];
-} 
+
+
+}
