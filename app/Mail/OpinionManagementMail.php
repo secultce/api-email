@@ -2,15 +2,17 @@
 
 namespace App\Mail;
 
+
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Envelope;
 
 class OpinionManagementMail extends Mailable
 {
     use Queueable, SerializesModels;
+    public $subject = 'Justificativa da Análise de Pareceristas Disponível';
 
     public function __construct(protected $data)
     {
@@ -20,7 +22,7 @@ class OpinionManagementMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Justificativa da Análise de Pareceristas Disponível',
+            subject: $this->subject,
         );
     }
 
@@ -28,12 +30,7 @@ class OpinionManagementMail extends Mailable
     {
         return new Content(
             view: 'emails.opinion-management',
-            with: [
-                'number' => $this->data['number'],
-                'agent' => $this->data['agent']['name'],
-                'opportunity' => $this->data['opportunity'],
-                'link' => $this->data['url'],
-            ]
+            with: ['data' => $this->data]
         );
     }
 
