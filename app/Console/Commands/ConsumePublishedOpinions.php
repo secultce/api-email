@@ -16,11 +16,7 @@ class ConsumePublishedOpinions extends Command
 
     protected $description = 'Consome fila com usuários que deverão ser notificados que os pareceres foram publicados';
 
-    public function __construct(
-        private readonly AmqpService $amqpService,
-    ) {
-        parent::__construct();
-    }
+
 
     /**
      * @throws \Exception

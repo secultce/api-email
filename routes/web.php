@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use JuniorShyko\Phpextensive\Extensive;
+use function Sentry\captureException;
 
 Route::get('/', function () {
     return ['Laravel' => app()->version()];
@@ -12,11 +13,16 @@ Route::get('/test', function () {
     $e = new Extensive;
     dump($e->extensive(185421.99)); // mil e um reais
 
-    dd($e->extensive(54001.99, Extensive::MALE_NUMBER));
+    try {
+        $this->functionThatMayFail();
+    } catch (\Throwable $exception) {
+        captureException($exception);
+    }
 
-    Route::view('/welcome', 'emails.deadline-for-accountability', [
-        'days' => '',
-    ]);
+});
+
+Route::get('/debug-sentry', function () {
+    throw new Exception('My first Sentry error!');
 });
 
 require __DIR__.'/auth.php';

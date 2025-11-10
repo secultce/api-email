@@ -55,4 +55,7 @@ elif [ -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ]; then
   rm -rf /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 fi
 
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
 exec "$@"

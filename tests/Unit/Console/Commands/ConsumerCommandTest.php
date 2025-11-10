@@ -44,7 +44,7 @@ class ConsumerCommandTest extends TestCase
                 'number' => '12345',
                 'days' => 30,
             ]),
-            config('app.rabbitmq.route_key_prop'),
+            config('rabbitmq.routing.module_accountability_proponent'),
         );
 
         // Create a partial mock of the command
@@ -71,7 +71,7 @@ class ConsumerCommandTest extends TestCase
                 'owner' => 'owner@example.com',
                 'registration' => '54321',
             ]),
-            config('app.rabbitmq.route_key_adm')
+            config('rabbitmq.routing.module_accountability_adm')
         );
 
         // Create a partial mock of the command

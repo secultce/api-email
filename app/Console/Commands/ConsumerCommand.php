@@ -32,14 +32,16 @@ class ConsumerCommand extends Command
      */
     public function handle(): int
     {
-        $queue = config('app.rabbitmq.queues.accountability');
+        $queue = config('rabbitmq.queues.queue_accountability');
+
         $connection = new AMQPStreamConnection(
-            config('app.rabbitmq.host'),
-            config('app.rabbitmq.port'),
-            config('app.rabbitmq.user'),
-            config('app.rabbitmq.pass'),
+            config('rabbitmq.host'),
+            config('rabbitmq.port'),
+            config('rabbitmq.user'),
+            config('rabbitmq.pass'),
             '/',
         );
+
         $channel = $connection->channel();
         $channel->queue_declare($queue, false, true, false, false);
 
@@ -60,7 +62,7 @@ class ConsumerCommand extends Command
     {
         $data = json_decode($msg->body);
 
-        if ($msg->getRoutingKey() == config('app.rabbitmq.route_key_prop')) {
+        if ($msg->getRoutingKey() == config('rabbitmq.routing.module_accountability_proponent')) {
             Mail::to($data->email)->send(new EmailRegistrationOpp(
                 $data->name,
                 $data->number,
@@ -68,7 +70,7 @@ class ConsumerCommand extends Command
             ));
         }
 
-        if ($msg->getRoutingKey() == config('app.rabbitmq.route_key_adm')) {
+        if ($msg->getRoutingKey() == config('rabbitmq.routing.module_accountability_adm')) {
             Mail::to($data->comission)->cc($data->owner)->send(new AnswerNotification(
                 $data->registration
             ));

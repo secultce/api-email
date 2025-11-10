@@ -151,7 +151,17 @@ RUN rm -r /var/lib/apt/lists/*
 
 RUN usermod -u 1000 www-data
 
-WORKDIR /var/www/html
+WORKDIR /var/www
+
+# Criar diretório de logs e ajustar permissões
+RUN mkdir -p /var/www/storage/logs && \
+    mkdir -p /var/www/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Ajustar permissões do diretório principal
+RUN chown -R www-data:www-data /var/www
+RUN chmod -R 755 /var/www
 
 COPY ./docker-entrypoint.sh /usr/local/bin/
 COPY ./supervisord.conf /etc/supervisord.conf

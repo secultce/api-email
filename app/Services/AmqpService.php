@@ -18,14 +18,7 @@ class AmqpService
      */
     public function __construct()
     {
-        $this->connection = new AMQPStreamConnection(
-            config('app.rabbitmq.host'),
-            config('app.rabbitmq.port'),
-            config('app.rabbitmq.user'),
-            config('app.rabbitmq.pass'),
-        );
 
-        $this->channel = $this->connection->channel();
     }
 
     /**
