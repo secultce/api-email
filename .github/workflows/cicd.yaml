@@ -54,7 +54,7 @@ jobs:
 
 
   BUILD-PRODUCTION:
-    if: github.event.pull_request.merged == true
+    needs: DEPLOY-HOMOLOG
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -85,7 +85,7 @@ jobs:
             secultceara/api-email:${{ env.app_version }}
 
   #DEPLOY-PRODUCTION:
-  #  needs: BUILD-HOMOLOG
+  #  needs: BUILD-PRODUCTION
   #  runs-on: mapaproduction
   #  environment:
   #    name: production
