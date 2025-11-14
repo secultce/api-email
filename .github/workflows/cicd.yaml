@@ -10,9 +10,54 @@ on:
   workflow_dispatch:
 
 jobs:
-  BUILD:
+  BUILD-HOMOLOG:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    environment:
+      name: homolog
+    steps: 
+      
+      - uses: actions/checkout@v4.1.1
+
+      - name: Read version file
+        id: get_version
+        run: |
+          VERSION=$(cat version.txt)
+          echo "app_version=$VERSION" >> $GITHUB_ENV
+      
+      - name: Docker Login  
+        uses: docker/login-action@v3.0.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+              
+      - name: Criação da Imagem docker
+        uses: docker/build-push-action@v5.0.0
+        with:
+          context: ./
+          file: Dockerfile
+          push: true
+          tags: |
+            secultceara/api-email:homolog
+            secultceara/api-email:${{ env.app_version }}-rc
+
+  DEPLOY-HOMOLOG:
+    needs: BUILD-HOMOLOG
+    runs-on: mapahomolog
+    environment:
+      name: homolog
+    steps:
+      - name: Pull da imagem do dockerhub
+        run: sudo docker pull secultceara/api-email:homolog
+      - name: Restart do docker-compose para atualizar o container com a nova imagem de homologação
+        run: cd /opt/docker/api-email && sudo docker-compose down && sudo docker-compose up -d
+
+
+  BUILD-PRODUCTION:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    environment:
+      name: production
     steps: 
       
       - uses: actions/checkout@v4.1.1
@@ -39,11 +84,13 @@ jobs:
             secultceara/api-email:latest
             secultceara/api-email:${{ env.app_version }}
 
-  #DEPLOY:
-  #  needs: BUILD
-  #  runs-on: mapahomolog
-  #  steps:
-  #    - name: Pull da imagem do dockerhub
-  #      run: sudo docker pull secultceara/mapasculturais:homolog
-  #    - name: Restart do docker-compose para atualizar o container com a nova imagem
-  #      run: cd /opt/docker/mapa5 && sudo docker-compose down && sudo docker-compose up -d
+  DEPLOY-PRODUCTION:
+    needs: BUILD-HOMOLOG
+    runs-on: mapaproduction
+    environment:
+      name: production
+    steps:
+      - name: Pull da imagem do dockerhub
+        run: sudo docker pull secultceara/api-email:latest
+      - name: Restart do docker-compose para atualizar o container com a nova imagem de homologação
+        run: cd /opt/docker/api-email && sudo docker-compose down && sudo docker-compose up -d
