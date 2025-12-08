@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libonig-dev \
     libzip-dev \
+    libpq-dev \
     unzip \
     zip \
     libxml2-dev \
@@ -30,7 +31,7 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath opcache intl zip sockets \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath opcache intl zip sockets \
     && /usr/bin/composer install \
     && rm -rf /var/lib/apt/lists/* \
     && chown -R www-data:www-data /var/www/html
