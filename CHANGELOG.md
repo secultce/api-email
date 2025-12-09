@@ -3,15 +3,6 @@ Todas as mudanças relevantes serão documentadas nesse arquivo.
 
 O formato é baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0), e esse projeto adere ao [Semantic Versionning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2025-11-18
-### Modificado
-- Reorganizado mensageria e documentado
-- Cobertura para os testes
-
-### Adicionado
-- Logs para o containers
-- Auditoria para envio dos emails
-
 ## [1.1.0] - 2024-10-28
 ### Modificado
 - Requisição para endpoint
