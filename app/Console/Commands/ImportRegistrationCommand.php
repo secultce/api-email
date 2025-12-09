@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\ImportRegistrationEvent;
 use Illuminate\Console\Command;
 use App\Services\RabbitMQService;
 use Illuminate\Support\Facades\Log;
@@ -56,11 +57,7 @@ class ImportRegistrationCommand extends Command
                 return;
             }
 
-            foreach ($registrations as $registration) {
-                Mail::to($registration['agent_email'])->send(new ImporteRegistrationMail($registration));
-                Log::info('Email enviado para ' . $registration['agent_email']);
-
-            }
+            event(new ImportRegistrationEvent($registrations));
             // Confirmar a mensagem após processamento
             $msg->ack();
         } catch (\Exception $e) {
