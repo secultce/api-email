@@ -1,0 +1,28 @@
+name: Tag Develop Commits
+
+on:
+  pull_request:
+    branches: [ develop ]
+    types: [ closed ]
+  push:
+    branches: [ develop ]
+
+jobs:
+  tag-dev:
+    if: github.event.pull_request.merged == true || github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # necessário para criar tags
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # necessário para acessar tags existentes (se precisar comparar)
+
+      - name: Read base version
+        run: |
+          BASE_VERSION=$(cat version.txt)
+          COMMIT_SHORT=$(git rev-parse --short HEAD)
+          DEV_TAG="${BASE_VERSION}-dev.${COMMIT_SHORT}"
+          echo "Criando tag: $DEV_TAG"
+          git tag "$DEV_TAG"
+          git push origin "$DEV_TAG"
