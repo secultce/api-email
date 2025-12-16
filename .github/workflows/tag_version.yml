@@ -1,28 +1,42 @@
-name: Tag Develop Commits
+name: Tag Develop on PR Merge
 
 on:
   pull_request:
     branches: [ develop ]
-    types: [ closed ]
-  push:
-    branches: [ develop ]
+    types: [ closed ]  # só dispara quando o PR é fechado
 
 jobs:
   tag-dev:
-    if: github.event.pull_request.merged == true || github.ref == 'refs/heads/develop'
+    # Só executa se o PR foi merged (não se foi fechado sem merge)
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: write  # necessário para criar tags
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # necessário para acessar tags existentes (se precisar comparar)
+          fetch-depth: 0  # necessário para buscar tags existentes
 
-      - name: Read base version
+      - name: Create dev tag if not exists
         run: |
+          # Ler a versão base do version.txt
           BASE_VERSION=$(cat version.txt)
           COMMIT_SHORT=$(git rev-parse --short HEAD)
           DEV_TAG="${BASE_VERSION}-dev.${COMMIT_SHORT}"
-          echo "Criando tag: $DEV_TAG"
-          git tag "$DEV_TAG"
-          git push origin "$DEV_TAG"
+
+          echo "Versão base: $BASE_VERSION"
+          echo "Commit do merge: $COMMIT_SHORT"
+          echo "Tag proposta: $DEV_TAG"
+
+          # Buscar todas as tags remotas
+          git fetch --tags
+
+          # Verificar se a tag já existe
+          if git rev-parse --tags "$DEV_TAG" >/dev/null 2>&1; then
+            echo "⚠️ A tag $DEV_TAG já existe. Pulando criação."
+          else
+            echo "✅ Criando e enviando tag: $DEV_TAG"
+            git tag "$DEV_TAG"
+            git push origin "$DEV_TAG"
+          fi
