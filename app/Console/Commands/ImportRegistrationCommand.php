@@ -7,8 +7,6 @@ use Illuminate\Console\Command;
 use App\Services\RabbitMQService;
 use Illuminate\Support\Facades\Log;
 use PhpAmqpLib\Message\AMQPMessage;
-use Illuminate\Support\Facades\Mail;
-USE App\Mail\ImporteRegistrationMail;
 
 class ImportRegistrationCommand extends Command
 {
@@ -24,26 +22,34 @@ class ImportRegistrationCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Comando para consumir a fila des imports de inscrição';
+    protected $description = 'Comando para consumir a fila de importação de inscrições';
 
     protected $queueService;
 
     public function __construct(RabbitMQService $queueService)
     {
         parent::__construct();
+
         $this->queueService = $queueService;
     }
+
     /**
-     * Execultando o comando no console
+     * Executa o comando no console.
      */
     public function handle()
     {
         $queue = config('rabbitmq.queues.queue_import_registration');
         $exchange = config('rabbitmq.exchange_default');
         $routingKey = config('rabbitmq.routing.module_import_registration_draft');
-        $this->queueService->consume($queue, $exchange, $routingKey, function (AMQPMessage $msg) {
-            $this->processMessage($msg);
-        });
+
+        $this->queueService->consume(
+            $queue,
+            $exchange,
+            $routingKey,
+            function (AMQPMessage $msg) {
+                $this->processMessage($msg);
+            }
+        );
     }
 
     protected function processMessage(AMQPMessage $msg)
@@ -51,18 +57,42 @@ class ImportRegistrationCommand extends Command
         Log::info('Mensagem recebida: ' . $msg->getBody());
 
         try {
-            $registrations = json_decode($msg->getBody(), true);
-            if (!is_array($registrations)) {
-                Log::error('Formato de mensagem inválido');
+            $registration = json_decode($msg->getBody(), true);
+
+            // Verifica se a mensagem contém uma única inscrição.
+            if (
+                !is_array($registration) ||
+                !array_key_exists('registration', $registration)
+            ) {
+                Log::error(
+                    'Formato de mensagem inválido. Esperada uma única inscrição.',
+                    [
+                        'body' => $msg->getBody(),
+                    ]
+                );
+
+                // Descarta a mensagem inválida.
+                $msg->ack();
+
                 return;
             }
 
-            event(new ImportRegistrationEvent($registrations));
-            // Confirmar a mensagem após processamento
+            event(new ImportRegistrationEvent($registration));
+
+            // Confirma a mensagem após o processamento.
             $msg->ack();
-        } catch (\Exception $e) {
-            \Sentry\captureMessage($e, \Sentry\Severity::info());
-            Log::error('Erro ao processar a mensagem');
+
+            Log::info(
+                'Mensagem processada com sucesso para a inscrição: '
+                . $registration['registration']
+            );
+        } catch (\Throwable $e) {
+            \Sentry\captureException($e);
+
+            Log::error('Erro ao processar a mensagem de importação de inscrição.', [
+                'exception' => $e->getMessage(),
+                'body' => $msg->getBody(),
+            ]);
         }
     }
 }

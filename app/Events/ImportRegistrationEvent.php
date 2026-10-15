@@ -11,18 +11,23 @@ class ImportRegistrationEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $registrations;
+    /**
+     * Dados da inscrição que será processada.
+     *
+     * @var array
+     */
+    public $registration;
 
     /**
-     * Create a new event instance.
+     * Cria uma nova instância do evento.
      */
-    public function __construct($registrations)
+    public function __construct(array $registration)
     {
-        $this->registrations = $registrations;
+        $this->registration = $registration;
     }
 
     /**
-     * Get the channels the event should broadcast on.
+     * Retorna os canais em que o evento seria transmitido.
      *
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
