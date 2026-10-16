@@ -6,7 +6,10 @@ use App\Events\ImportRegistrationEvent;
 use Illuminate\Console\Command;
 use App\Services\RabbitMQService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use JsonException;
 use PhpAmqpLib\Message\AMQPMessage;
+use Throwable;
 
 class ImportRegistrationCommand extends Command
 {
@@ -52,47 +55,135 @@ class ImportRegistrationCommand extends Command
         );
     }
 
-    protected function processMessage(AMQPMessage $msg)
+    protected function processMessage(AMQPMessage $msg): void
     {
-        Log::info('Mensagem recebida: ' . $msg->getBody());
+        $body = $msg->getBody();
 
         try {
-            $registration = json_decode($msg->getBody(), true);
+            $registration = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            $this->rejectInvalidMessage($msg, 'JSON inválido.');
 
-            // Verifica se a mensagem contém uma única inscrição.
-            if (
-                !is_array($registration) ||
-                !array_key_exists('registration', $registration)
-            ) {
-                Log::error(
-                    'Formato de mensagem inválido. Esperada uma única inscrição.',
-                    [
-                        'body' => $msg->getBody(),
-                    ]
-                );
+            return;
+        }
 
-                // Descarta a mensagem inválida.
-                $msg->ack();
+        if (!is_array($registration)) {
+            $this->rejectInvalidMessage($msg, 'A mensagem não contém um objeto JSON válido.');
 
-                return;
-            }
+            return;
+        }
 
-            event(new ImportRegistrationEvent($registration));
+        $validator = Validator::make($registration, [
+            'registration' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
 
-            // Confirma a mensagem após o processamento.
-            $msg->ack();
+            'opp_id' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
 
-            Log::info(
-                'Mensagem processada com sucesso para a inscrição: '
-                . $registration['registration']
+            'opp_name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'number' => [
+                'required',
+            ],
+
+            'agent_name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'agent_email' => [
+                'required',
+                'email',
+                'max:254',
+            ],
+        ]);
+
+        $numberIsScalar = isset($registration['number']) && is_scalar($registration['number']) && !is_bool($registration['number']);
+
+        if ($validator->fails() || !$numberIsScalar) {
+            Log::warning(
+                'Mensagem de importação inválida.',
+                [
+                    'registration' => $registration['registration'] ?? null,
+                    'opp_id' => $registration['opp_id'] ?? null,
+                    'invalid_fields' => $validator->errors()->keys(),
+                ]
             );
-        } catch (\Throwable $e) {
+
+            /*
+            * Rejeita a mensagem sem solicitar reentrega imediata.
+            *
+            * IMPORTANTE:
+            * A fila precisa estar configurada com uma DLX e uma DLQ.
+            */
+            $msg->reject(false);
+
+            return;
+        }
+
+        try {
+            event(new ImportRegistrationEvent($registration));
+        } catch (Throwable $e) {
             \Sentry\captureException($e);
 
-            Log::error('Erro ao processar a mensagem de importação de inscrição.', [
-                'exception' => $e->getMessage(),
-                'body' => $msg->getBody(),
-            ]);
+            Log::error(
+                'Erro ao processar a mensagem de importação.',
+                [
+                    'registration' => $registration['registration'],
+                    'opp_id' => $registration['opp_id'],
+                    'exception' => $e->getMessage(),
+                    'exception_class' => get_class($e),
+                ]
+            );
+
+            /*
+            * Não reencaminha imediatamente para a mesma fila.
+            *
+            * Com uma DLX configurada, a mensagem será encaminhada
+            * para o destino de falhas definido na infraestrutura.
+            */
+            $msg->nack(false);
+
+            return;
         }
+
+        $msg->ack();
+
+        Log::info(
+            'Mensagem processada com sucesso.',
+            [
+                'registration' => $registration['registration'],
+                'opp_id' => $registration['opp_id'],
+            ]
+        );
+    }
+
+    /**
+     * Rejeita uma mensagem inválida.
+     */
+    protected function rejectInvalidMessage(
+        AMQPMessage $msg,
+        string $reason
+    ): void {
+        Log::warning(
+            'Mensagem inválida recebida do RabbitMQ.',
+            [
+                'reason' => $reason,
+                'body_bytes' => strlen($msg->getBody()),
+            ]
+        );
+
+        $msg->reject(false);
     }
 }

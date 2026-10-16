@@ -35,6 +35,11 @@ class EmailDispatch extends Model implements Auditable
         'mailable_type',
         'meta',
         'dispatched_at',
+        'idempotency_key',
+        'status',
+        'attempts',
+        'last_error',
+        'sent_at',
     ];
 
     /**
@@ -43,8 +48,8 @@ class EmailDispatch extends Model implements Auditable
      * @var array
      */
     protected $casts = [
-        'meta' => 'array'
+        'meta' => 'array',
+        'dispatched_at' => 'datetime',
+        'sent_at' => 'datetime',
     ];
-
-
 }
