@@ -23,6 +23,7 @@ class EmailDispatch extends Model implements Auditable
         'subject',
         'meta'
     ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -34,7 +35,11 @@ class EmailDispatch extends Model implements Auditable
         'content',
         'mailable_type',
         'meta',
+        'status',
+        'attempted_at',
         'dispatched_at',
+        'failed_at',
+        'error_message',
     ];
 
     /**
@@ -43,8 +48,9 @@ class EmailDispatch extends Model implements Auditable
      * @var array
      */
     protected $casts = [
-        'meta' => 'array'
+        'meta' => 'array',
+        'attempted_at' => 'datetime',
+        'dispatched_at' => 'datetime',
+        'failed_at' => 'datetime',
     ];
-
-
 }

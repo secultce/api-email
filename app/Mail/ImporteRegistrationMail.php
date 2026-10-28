@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -40,8 +39,8 @@ class ImporteRegistrationMail extends Mailable
             view: 'emails.import-registration',
             with: [
                 'registration' => $this->data['registration'],
-                'opp_id' => $this->data['opp_id'],
-                'opp_name' => $this->data['opp_name'],
+                'opportunity_id' => $this->data['opportunity_id'],
+                'opportunity_name' => $this->data['opportunity_name'],
                 'number' => $this->data['number'],
                 'agent_name' => $this->data['agent_name'],
                 'agent_email' => $this->data['agent_email'],

@@ -2,97 +2,132 @@
 
 namespace App\Console\Commands;
 
-use App\Events\ImportRegistrationEvent;
-use Illuminate\Console\Command;
+use App\Services\EmailDeliveryOutcomeUnknownException;
+use App\Services\ImportRegistrationProcessor;
+use App\Services\InvalidRegistrationMessageException;
 use App\Services\RabbitMQService;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use PhpAmqpLib\Message\AMQPMessage;
+use Throwable;
 
 class ImportRegistrationCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'rabbitmq:import-registration-command';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Comando para consumir a fila de importação de inscrições';
+    protected $description = 'Consome mensagens de importação de inscrições';
 
-    protected $queueService;
-
-    public function __construct(RabbitMQService $queueService)
-    {
+    public function __construct(
+        protected RabbitMQService $queueService,
+        protected ImportRegistrationProcessor $processor
+    ) {
         parent::__construct();
-
-        $this->queueService = $queueService;
     }
 
-    /**
-     * Executa o comando no console.
-     */
-    public function handle()
+    public function handle(): int
     {
+        if (!config('rabbitmq.enabled', true)) {
+            Log::info('Consumidor de inscrições desabilitado pela configuração.');
+
+            return self::SUCCESS;
+        }
+
         $queue = config('rabbitmq.queues.queue_import_registration');
         $exchange = config('rabbitmq.exchange_default');
         $routingKey = config('rabbitmq.routing.module_import_registration_draft');
 
-        $this->queueService->consume(
-            $queue,
-            $exchange,
-            $routingKey,
-            function (AMQPMessage $msg) {
-                $this->processMessage($msg);
-            }
-        );
+        try {
+            $this->queueService->consume(
+                $queue,
+                $exchange,
+                $routingKey,
+                function (AMQPMessage $msg): void {
+                    $this->processMessage($msg);
+                }
+            );
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            Log::critical(
+                'O consumidor RabbitMQ foi encerrado por uma falha.',
+                [
+                    'exception' => $e->getMessage(),
+                    'queue' => $queue,
+                ]
+            );
+
+            report($e);
+
+            return self::FAILURE;
+        }
     }
 
-    protected function processMessage(AMQPMessage $msg)
+    protected function processMessage(AMQPMessage $msg): void
     {
-        Log::info('Mensagem recebida: ' . $msg->getBody());
-
         try {
-            $registration = json_decode($msg->getBody(), true);
-
-            // Verifica se a mensagem contém uma única inscrição.
-            if (
-                !is_array($registration) ||
-                !array_key_exists('registration', $registration)
-            ) {
-                Log::error(
-                    'Formato de mensagem inválido. Esperada uma única inscrição.',
-                    [
-                        'body' => $msg->getBody(),
-                    ]
-                );
-
-                // Descarta a mensagem inválida.
-                $msg->ack();
-
-                return;
+            try {
+                $data = json_decode($msg->getBody(), true, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException $e) {
+                throw new InvalidRegistrationMessageException('O corpo da mensagem não contém um JSON válido.', 0, $e);
             }
 
-            event(new ImportRegistrationEvent($registration));
+            if (!is_array($data)) {
+                throw new InvalidRegistrationMessageException('A mensagem deve conter um objeto JSON.');
+            }
 
-            // Confirma a mensagem após o processamento.
+            $this->processor->process($data);
+
+            /*
+            * O processamento terminou com sucesso ou a mensagem
+            * foi identificada como duplicada.
+            */
             $msg->ack();
-
-            Log::info(
-                'Mensagem processada com sucesso para a inscrição: '
-                . $registration['registration']
+        } catch (InvalidRegistrationMessageException $e) {
+            Log::error(
+                'Mensagem de inscrição inválida.',
+                [
+                    'exception' => $e->getMessage(),
+                    'body' => $msg->getBody(),
+                ]
             );
-        } catch (\Throwable $e) {
-            \Sentry\captureException($e);
 
-            Log::error('Erro ao processar a mensagem de importação de inscrição.', [
-                'exception' => $e->getMessage(),
-                'body' => $msg->getBody(),
-            ]);
+            /*
+            * Descarta a entrega atual da fila principal.
+            * Para não perder a mensagem, configure uma DLQ.
+            */
+            $msg->nack(false, false);
+        } catch (EmailDeliveryOutcomeUnknownException $e) {
+            Log::critical(
+                'O resultado do envio do e-mail é desconhecido.',
+                [
+                    'exception' => $e->getMessage(),
+                    'body' => $msg->getBody(),
+                ]
+            );
+
+            /*
+            * Não repetir um envio cujo resultado é incerto.
+            * A reconciliação será feita pelo registro no banco.
+            */
+            report($e);
+
+            $msg->ack();
+        } catch (Throwable $e) {
+            Log::error(
+                'Falha no processamento da inscrição.',
+                [
+                    'exception' => $e->getMessage(),
+                    'body' => $msg->getBody(),
+                ]
+            );
+
+            report($e);
+
+            /*
+            * Rejeita a mensagem sem solicitar reentrega imediata.
+            * Com uma DLX configurada, ela será encaminhada à DLQ.
+            */
+            $msg->nack(false, false);
         }
     }
 }
