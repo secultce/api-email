@@ -20,6 +20,12 @@ class ImportRegistrationProcessor
      */
     public function process(array $data): void
     {
+        foreach (['opportunity_id' => 'opp_id', 'opportunity_name' => 'opp_name'] as $field => $legacyField) {
+            if (!array_key_exists($field, $data) && array_key_exists($legacyField, $data)) {
+                $data[$field] = $data[$legacyField];
+            }
+        }
+
         $validator = Validator::make($data, [
             'event_type' => [
                 'sometimes',

@@ -55,6 +55,29 @@ class ImportRegistrationProcessorTest extends TestCase
         $this->assertSame('sent', EmailDispatch::query()->firstOrFail()->status);
     }
 
+    public function test_mensagem_legada_e_canonica_da_mesma_inscricao_geram_um_unico_envio(): void
+    {
+        Mail::fake();
+        $canonical = $this->payload();
+        $legacy = [
+            'registration' => $canonical['registration'],
+            'opp_id' => $canonical['opportunity_id'],
+            'opp_name' => $canonical['opportunity_name'],
+            'number' => $canonical['number'],
+            'agent_name' => $canonical['agent_name'],
+            'agent_email' => $canonical['agent_email'],
+        ];
+        $processor = app(ImportRegistrationProcessor::class);
+
+        $processor->process($legacy);
+        $processor->process($canonical);
+
+        Mail::assertSent(ImporteRegistrationMail::class, 1);
+        $dispatch = EmailDispatch::query()->sole();
+        $this->assertSame($canonical['opportunity_id'], $dispatch->meta['opportunity_id']);
+        $this->assertSame($canonical['opportunity_name'], $dispatch->meta['opportunity_name']);
+    }
+
     public function test_mesmo_message_id_nao_dispara_segundo_email(): void
     {
         Mail::fake();

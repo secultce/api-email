@@ -14,23 +14,10 @@ class RabbitMQService
 
     private $channel = null;
 
-    public function __construct()
+    private function connect(): void
     {
-        if (!config('rabbitmq.enabled', true)) {
-            Log::info('Conexão RabbitMQ não iniciada: integração desabilitada.');
-
-            return;
-        }
-
         try {
-            $this->connection = new AMQPStreamConnection(
-                config('rabbitmq.host'),
-                config('rabbitmq.port'),
-                config('rabbitmq.user'),
-                config('rabbitmq.pass'),
-                config('rabbitmq.vhost')
-            );
-
+            $this->connection = $this->openConnection();
             $this->channel = $this->connection->channel();
 
             Log::info('Conexão com RabbitMQ estabelecida com sucesso.');
@@ -52,6 +39,17 @@ class RabbitMQService
         }
     }
 
+    protected function openConnection(): AMQPStreamConnection
+    {
+        return new AMQPStreamConnection(
+            config('rabbitmq.host'),
+            config('rabbitmq.port'),
+            config('rabbitmq.user'),
+            config('rabbitmq.pass'),
+            config('rabbitmq.vhost')
+        );
+    }
+
     public function consume(string $queue, string $exchange, string $routingKey, callable $callback): void
     {
         if (!config('rabbitmq.enabled', true)) {
@@ -60,9 +58,7 @@ class RabbitMQService
             return;
         }
 
-        if (!$this->channel) {
-            throw new RuntimeException('Não existe um canal RabbitMQ disponível para consumo.');
-        }
+        $this->connect();
 
         try {
             /*
@@ -81,7 +77,7 @@ class RabbitMQService
 
             $this->channel->queue_bind($queue, $exchange, $routingKey);
 
-            $prefetchCount = max(1, (int) config('rabbitmq.consumer.prefetch_count', 1));
+            $prefetchCount = max(1, (int) config('rabbitmq.prefetch_count', 1));
 
             $this->channel->basic_qos(0, $prefetchCount, false);
 
@@ -116,6 +112,8 @@ class RabbitMQService
             ]);
 
             throw $e;
+        } finally {
+            $this->close();
         }
     }
 

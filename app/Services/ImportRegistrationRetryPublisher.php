@@ -94,7 +94,7 @@ class ImportRegistrationRetryPublisher
             config('rabbitmq.host'),
             (int) config('rabbitmq.port'),
             config('rabbitmq.user'),
-            config('rabbitmq.password'),
+            config('rabbitmq.pass'),
             config('rabbitmq.vhost', '/')
         );
     }
