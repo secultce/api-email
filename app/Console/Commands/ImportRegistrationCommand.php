@@ -2,97 +2,179 @@
 
 namespace App\Console\Commands;
 
-use App\Events\ImportRegistrationEvent;
-use Illuminate\Console\Command;
+use App\Services\EmailDeliveryOutcomeUnknownException;
+use App\Services\ImportRegistrationProcessor;
+use App\Services\ImportRegistrationRetryPublisher;
+use App\Services\InvalidRegistrationMessageException;
 use App\Services\RabbitMQService;
+use App\Services\RetryableImportRegistrationException;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire\AMQPTable;
+use Throwable;
 
 class ImportRegistrationCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'rabbitmq:import-registration-command';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Comando para consumir a fila de importação de inscrições';
+    protected $description = 'Consome mensagens de importação de inscrições';
 
-    protected $queueService;
-
-    public function __construct(RabbitMQService $queueService)
-    {
+    public function __construct(
+        protected RabbitMQService $queueService,
+        protected ImportRegistrationProcessor $processor,
+        protected ImportRegistrationRetryPublisher $retryPublisher
+    ) {
         parent::__construct();
-
-        $this->queueService = $queueService;
     }
 
-    /**
-     * Executa o comando no console.
-     */
-    public function handle()
+    public function handle(): int
     {
+        if (!config('rabbitmq.enabled', true)) {
+            Log::info('Consumidor de inscrições desabilitado pela configuração.');
+
+            return self::SUCCESS;
+        }
+
         $queue = config('rabbitmq.queues.queue_import_registration');
         $exchange = config('rabbitmq.exchange_default');
         $routingKey = config('rabbitmq.routing.module_import_registration_draft');
 
-        $this->queueService->consume(
-            $queue,
-            $exchange,
-            $routingKey,
-            function (AMQPMessage $msg) {
-                $this->processMessage($msg);
-            }
-        );
+        try {
+            $this->queueService->consume(
+                $queue,
+                $exchange,
+                $routingKey,
+                function (AMQPMessage $msg): void {
+                    $this->processMessage($msg);
+                }
+            );
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            Log::critical('O consumidor RabbitMQ foi encerrado por uma falha.', [
+                'exception' => $e->getMessage(),
+                'queue' => $queue,
+            ]);
+
+            report($e);
+
+            return self::FAILURE;
+        }
     }
 
-    protected function processMessage(AMQPMessage $msg)
+    protected function processMessage(AMQPMessage $msg): void
     {
-        Log::info('Mensagem recebida: ' . $msg->getBody());
+        $body = $msg->getBody();
+        $context = ['body_sha256' => hash('sha256', $body)];
+        $retryCount = 0;
 
         try {
-            $registration = json_decode($msg->getBody(), true);
+            // Lê o contador antes de efeitos colaterais; cabeçalho malformado é inválido.
+            $retryCount = $this->readRetryCount($msg);
 
-            // Verifica se a mensagem contém uma única inscrição.
-            if (
-                !is_array($registration) ||
-                !array_key_exists('registration', $registration)
-            ) {
-                Log::error(
-                    'Formato de mensagem inválido. Esperada uma única inscrição.',
-                    [
-                        'body' => $msg->getBody(),
-                    ]
-                );
+            try {
+                $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException $e) {
+                throw new InvalidRegistrationMessageException('O corpo da mensagem não contém um JSON válido.', 0, $e);
+            }
 
-                // Descarta a mensagem inválida.
-                $msg->ack();
+            if (!is_array($data)) {
+                throw new InvalidRegistrationMessageException('A mensagem deve conter um objeto JSON.');
+            }
+
+            $context += [
+                'message_id' => $data['message_id'] ?? null,
+                'opportunity_id' => $data['opportunity_id'] ?? null,
+                'registration_id' => $data['registration'] ?? null,
+                'retry_count' => $retryCount,
+            ];
+
+            $this->processor->process($data);
+        } catch (InvalidRegistrationMessageException $e) {
+            Log::error('Mensagem de inscrição inválida.', $context + ['exception' => $e->getMessage()]);
+
+            $msg->nack(false, false); // DLQ definitiva
+
+            return;
+        } catch (EmailDeliveryOutcomeUnknownException $e) {
+            Log::critical('O resultado do envio do e-mail é desconhecido.', $context + [
+                'exception' => $e->getMessage(),
+            ]);
+
+            report($e);
+            // O status unknown foi persistido; o ACK fica após os catches.
+        } catch (RetryableImportRegistrationException $e) {
+            $routes = config('rabbitmq.retry.routes', []);
+            $nextRetry = $retryCount + 1;
+
+            if (!config('rabbitmq.retry.enabled', false) || !isset($routes[$nextRetry])) {
+                Log::error('Tentativas de retry desabilitadas ou esgotadas; enviando à DLQ.', $context + [
+                    'exception' => $e->getMessage(),
+                    'retry_count' => $retryCount,
+                ]);
+
+                $msg->nack(false, false);
 
                 return;
             }
 
-            event(new ImportRegistrationEvent($registration));
+            try {
+                $this->retryPublisher->publish($body, $nextRetry);
+            } catch (Throwable $publicationException) {
+                Log::critical(
+                    'Falha ao publicar na fila de retry; mensagem original permanece sem ACK.',
+                    $context + ['exception' => $publicationException->getMessage()]
+                );
 
-            // Confirma a mensagem após o processamento.
-            $msg->ack();
+                report($publicationException);
 
-            Log::info(
-                'Mensagem processada com sucesso para a inscrição: '
-                . $registration['registration']
-            );
-        } catch (\Throwable $e) {
-            \Sentry\captureException($e);
+                // Propaga para o loop de consumo encerrar a conexão.
+                // O RabbitMQ poderá reentregar a mensagem original.
+                throw $publicationException;
+            }
 
-            Log::error('Erro ao processar a mensagem de importação de inscrição.', [
-                'exception' => $e->getMessage(),
-                'body' => $msg->getBody(),
+            Log::warning('Mensagem encaminhada para retry após falha anterior ao SMTP.', $context + [
+                'next_retry' => $nextRetry,
             ]);
+
+            $msg->ack(); // ACK somente depois do publisher confirm positivo.
+
+            return;
+        } catch (Throwable $e) {
+            Log::error('Falha não recuperável automaticamente.', $context + [
+                'exception' => $e->getMessage(),
+            ]);
+
+            report($e);
+
+            $msg->nack(false, false); // DLQ; não reenviar SMTP incerto.
+
+            return;
         }
+
+        $msg->ack();
+    }
+
+    private function readRetryCount(AMQPMessage $msg): int
+    {
+        if (!$msg->has('application_headers')) {
+            return 0;
+        }
+
+        $headers = $msg->get('application_headers');
+        if (!$headers instanceof AMQPTable) {
+            throw new InvalidRegistrationMessageException('Cabeçalho AMQP inválido.');
+        }
+
+        $data = $headers->getNativeData();
+        $count = $data['x-import-registration-retry-count'] ?? 0;
+        $max = count(config('rabbitmq.retry.routes', []));
+
+        if (!is_int($count) || $count < 0 || $count > $max) {
+            throw new InvalidRegistrationMessageException('Contador de retry inválido.');
+        }
+
+        return $count;
     }
 }
