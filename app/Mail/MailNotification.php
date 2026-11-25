@@ -14,7 +14,7 @@ class MailNotification extends Mailable
 
     public function __construct(
         protected string $mailSubject,
-        protected string $html
+        protected string $htmlBody
     ) {}
 
     public function envelope(): Envelope
@@ -27,7 +27,7 @@ class MailNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            htmlString: $this->html,
+            htmlString: $this->htmlBody,
         );
     }
 
