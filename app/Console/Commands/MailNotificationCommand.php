@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\EmailDeliveryOutcomeUnknownException;
 use App\Services\InvalidRegistrationMessageException;
 use App\Services\MailNotificationProcessor;
 use App\Services\RabbitMQService;
@@ -84,6 +85,13 @@ class MailNotificationCommand extends Command
             $msg->nack(false, false); // DLQ
 
             return;
+        } catch (EmailDeliveryOutcomeUnknownException $e) {
+            Log::critical('O resultado do envio da notificação de inscrição é desconhecido.', $context + [
+                'exception' => $e->getMessage(),
+            ]);
+
+            report($e);
+            // O status unknown foi persistido e bloqueia reenvio; o ACK fica após os catches.
         } catch (Throwable $e) {
             Log::error('Falha ao enviar notificação de inscrição.', $context + ['exception' => $e->getMessage()]);
 

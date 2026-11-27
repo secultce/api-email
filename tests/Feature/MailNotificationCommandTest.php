@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Console\Commands\MailNotificationCommand;
+use App\Services\EmailDeliveryOutcomeUnknownException;
 use App\Services\InvalidRegistrationMessageException;
 use App\Services\MailNotificationProcessor;
 use App\Services\RabbitMQService;
@@ -52,10 +53,19 @@ class MailNotificationCommandTest extends TestCase
         $this->commandUnderTest($processor)->accept($this->message($this->body(), false));
     }
 
-    public function test_falha_no_envio_vai_para_dlq(): void
+    public function test_resultado_desconhecido_recebe_ack(): void
     {
         $processor = Mockery::mock(MailNotificationProcessor::class);
-        $processor->shouldReceive('process')->once()->andThrow(new RuntimeException('Timeout SMTP'));
+        $processor->shouldReceive('process')->once()
+            ->andThrow(new EmailDeliveryOutcomeUnknownException('Timeout SMTP'));
+
+        $this->commandUnderTest($processor)->accept($this->message($this->body(), true));
+    }
+
+    public function test_falha_de_banco_vai_para_dlq(): void
+    {
+        $processor = Mockery::mock(MailNotificationProcessor::class);
+        $processor->shouldReceive('process')->once()->andThrow(new RuntimeException('Banco indisponível'));
 
         $this->commandUnderTest($processor)->accept($this->message($this->body(), false));
     }

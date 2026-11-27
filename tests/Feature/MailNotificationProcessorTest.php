@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Mail\MailNotification;
 use App\Models\EmailDispatch;
+use App\Services\EmailDeliveryOutcomeUnknownException;
 use App\Services\InvalidRegistrationMessageException;
 use App\Services\MailNotificationProcessor;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
@@ -81,20 +83,109 @@ class MailNotificationProcessorTest extends TestCase
         }
     }
 
-    public function test_falha_no_envio_marca_failed_e_relanca(): void
+    public function test_falha_no_envio_marca_unknown_e_nao_reenvia(): void
     {
+        $payload = $this->payload();
         Mail::shouldReceive('to')->once()->with('agente@example.com')->andReturnSelf();
         Mail::shouldReceive('send')->once()->andThrow(new RuntimeException('Timeout SMTP'));
 
         try {
-            $this->processor()->process($this->payload());
-            $this->fail('A falha no envio deveria ser relançada.');
-        } catch (RuntimeException $e) {
-            $this->assertSame('Timeout SMTP', $e->getMessage());
+            $this->processor()->process($payload);
+            $this->fail('O resultado incerto deveria ser sinalizado.');
+        } catch (EmailDeliveryOutcomeUnknownException $e) {
+            $this->assertSame('Timeout SMTP', $e->getPrevious()->getMessage());
         }
 
-        $dispatch = EmailDispatch::first();
-        $this->assertSame('failed', $dispatch->status);
+        $dispatch = EmailDispatch::sole();
+        $this->assertSame('unknown', $dispatch->status);
         $this->assertSame('Timeout SMTP', $dispatch->error_message);
+
+        // Reprocessar a mesma mensagem (ex.: replay da DLQ) não envia de novo
+        $this->processor()->process($payload);
+        $this->assertSame(1, EmailDispatch::count());
+    }
+
+    public function test_falha_ao_registrar_sent_apos_envio_nao_marca_failed(): void
+    {
+        Mail::fake();
+        $payload = $this->payload();
+
+        // Simula o banco falhando logo depois de o SMTP aceitar o e-mail
+        EmailDispatch::updating(function (EmailDispatch $dispatch) {
+            if ($dispatch->status === 'sent') {
+                throw new RuntimeException('Conexão com o banco perdida');
+            }
+        });
+
+        try {
+            $this->processor()->process($payload);
+            $this->fail('O resultado incerto deveria ser sinalizado.');
+        } catch (EmailDeliveryOutcomeUnknownException) {
+        }
+
+        Mail::assertSent(MailNotification::class, 1);
+        $this->assertSame('unknown', EmailDispatch::sole()->status);
+
+        $this->processor()->process($payload);
+        Mail::assertSent(MailNotification::class, 1);
+    }
+
+    public function test_reserva_existente_em_envio_bloqueia_outro_consumidor(): void
+    {
+        Mail::fake();
+        $payload = $this->payload();
+
+        EmailDispatch::create([
+            'to' => $payload['to'],
+            'subject' => $payload['subject'],
+            'mailable_type' => MailNotification::class,
+            'meta' => ['message_id' => $payload['message_id']],
+            'status' => 'sending',
+        ]);
+
+        $this->processor()->process($payload);
+
+        Mail::assertNothingSent();
+        $this->assertSame(1, EmailDispatch::count());
+    }
+
+    public function test_indice_unico_impede_dois_dispatches_com_mesmo_message_id(): void
+    {
+        $row = [
+            'to' => 'agente@example.com',
+            'subject' => 'Inscrição enviada',
+            'mailable_type' => MailNotification::class,
+            'meta' => json_encode(['message_id' => 'sendmailnotification:dup']),
+            'status' => 'sending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        EmailDispatch::query()->insert($row);
+
+        $this->expectException(UniqueConstraintViolationException::class);
+        EmailDispatch::query()->insert($row);
+    }
+
+    public function test_dispatch_failed_pode_ser_reprocessado(): void
+    {
+        Mail::fake();
+        $payload = $this->payload();
+
+        EmailDispatch::create([
+            'to' => $payload['to'],
+            'subject' => $payload['subject'],
+            'mailable_type' => MailNotification::class,
+            'meta' => ['message_id' => $payload['message_id']],
+            'status' => 'failed',
+            'error_message' => 'erro anterior',
+        ]);
+
+        $this->processor()->process($payload);
+
+        Mail::assertSent(MailNotification::class, 1);
+        $dispatch = EmailDispatch::sole();
+        $this->assertSame('sent', $dispatch->status);
+        $this->assertNull($dispatch->error_message);
     }
 }
